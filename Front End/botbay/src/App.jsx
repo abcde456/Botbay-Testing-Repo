@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'; 
 import LandingPage from './assets/pages/landingpage.jsx';
 import SignUpPage from './assets/pages/signuppage.jsx'
 import SignInPage from './assets/pages/signinpage.jsx'
@@ -8,7 +8,7 @@ import Dashboard from './assets/pages/dashboard.jsx';
 
 function App() {
   return (
-    <Router basename="/Botbay-Testing-Repo"> 
+    <Router> 
       <div className="App">
         <Routes>
           <Route path="/" element={<LandingPage />} />
