@@ -8,7 +8,7 @@ import Dashboard from './assets/pages/dashboard.jsx';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/Botbay-Testing-Repo"> 
       <div className="App">
         <Routes>
           <Route path="/" element={<LandingPage />} />
