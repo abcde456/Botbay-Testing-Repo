@@ -44,7 +44,7 @@ function PartsPageDesktop() {
     }, []);
 
     useEffect(() => {
-        fetch("/taglist.json")
+        fetch("taglist.json")
             .then(res => res.json())
             .then(data => setTags(data))
             .catch(err => console.error(err));
@@ -57,7 +57,7 @@ function PartsPageDesktop() {
     useEffect(() => {
         const fetchParts = async () => {
             try {
-                const response = await fetch("/partslist.json");
+                const response = await fetch("partslist.json");
                 const data = await response.json();
                 setListResults(data);
             } catch (err) {
