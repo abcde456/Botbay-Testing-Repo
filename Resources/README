@@ -1,0 +1,5 @@
+Contains files to help develop this project, these files will not be present in the final builds.
+
+
+
+Json files are set as jsonc for the sake of commenting, json used in project will not use jsonc

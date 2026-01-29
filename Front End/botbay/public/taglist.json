@@ -1,0 +1,6 @@
+[
+    {"name": "electrical", "color": "#FF5733" },
+    {"name": "actuator", "color": "#33C1FF" },
+    {"name": "motor", "color": "#333333" },
+    {"name": "structural", "color": "#F5F5F5" }
+]

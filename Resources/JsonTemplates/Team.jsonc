@@ -1,0 +1,35 @@
+{ // NOT FINAL
+
+    "TeamInfo" : {
+
+        "Name" : "<Team Name>",
+        "Members" : [1,2,4], //Store user ids.
+        "Owner" : 3 // Store owner of team user id.
+    },
+    "Parts" : [ // list to store parts
+
+        // Added tags, name, and manufacturer id
+
+        {"Type" : "motor", "ID" : 1, "Quantity" : 10, "tags":["motor"], "name": "NeveRest Orbital 20 Gearmotor", "manufacturerId": "am-3637"},
+        {"Type" : "part", "ID" : 5, "Quantity" : 3, "tags":["structural", "custom", "3dprint"], "name": "Wheel Support", "manufacturerId":null}
+
+    ],
+
+    "Battery" : [ // Should be worked on later (NOT FINAL)
+        {"Type" : "Battery", "ID" : 10,"Charging" : true}, // ID will be part id
+        {"Type" : "Battery", "ID" : 10,"Charging" : false}
+    ],
+
+    "PackingList" : [
+    {"Type" : "Part", "ID" : 1,"Quantity" : 5},
+    {"Type" : "Part", "ID" : 5,"Quantity" : 10}
+    ],
+    "Upcoming" : [
+        {"Type" : "Event","Location" : "<Location name>","Note" : "<User notes here>","Time" : 1769275408} // Will use UNIX time, until i can find a better alternative
+    ]
+
+
+
+
+
+}

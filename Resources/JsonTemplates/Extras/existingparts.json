@@ -1,0 +1,40 @@
+[
+    {
+        "id": "am-3637", 
+        "name": "NeveRest Orbital 20 Gearmotor", 
+        "manufacturer": "andymark",
+        "tags":["motor", "actuator"],
+        "stats":{
+            "type":"motor",
+            "connector_types": ["JST-VH-2", "Anderson Powerpoles"],
+            "max_power": 14,
+            "stall_current": 11,
+            "voltage": 12,
+            "output_shaft_length": 6,
+            "no_load_speed": 340,
+            "cpr": 537.6,
+            "ppr": 134.4,
+            "stall_torque": 1.23577,
+            "shaft_type": "6mmD"
+        }
+    },
+    {
+        "id": "75001-37", 
+        "name": "Maverick Hex Planetary Gearbox Motor w/Encoder (3.7:1 Ratio gearbox)", 
+        "manufacturer": "studica",
+        "tags":["motor", "actuator"],
+        "stats":{
+            "type":"motor",
+            "connector_types": ["Anderson Powerpoles"],
+            "max_power": 14,
+            "stall_current": 11,
+            "voltage": 12,
+            "output_shaft_length": 6,
+            "no_load_speed": 1648.65,
+            "cpr": 88.8,
+            "ppr": null,
+            "stall_torque": 0.47,
+            "shaft_type": "6mmHex"
+        }
+    }
+]

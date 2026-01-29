@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #ImagePreview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        #ImagePreview img:hover { border-color: red; }
+    </style>
+</head>
+<body>
+    <h1>Submit Products</h1>
+    <form id="ProductForm" >
+        <h3>Authentication Code</h3>
+        <input type="password" id="Password" placeholder="Enter Code" required>
+        
+        <h3>Product Name</h3>
+        <input type="text" id="Name" placeholder="Product Name" required>
+        
+        <h3>Product Image(s):</h3>
+        <input type="text" id="ImageUrl" placeholder="Add Valid Image Url">
+        <button type="button" onclick="ShowImage()">Preview</button>
+        
+        <div id="ImagePreview"></div>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        const PasswordInput = document.getElementById("Password");
+        const NameInput = document.getElementById("Name");
+        const ImageUrlInput = document.getElementById("ImageUrl");
+        const ImageBox = document.getElementById("ImagePreview");
+        const ProductForm = document.getElementById("ProductForm");
+        
+        let Images = [];
+
+        function ShowImage() {
+            const Url = ImageUrlInput.value.trim();
+            if (!Url) return;
+
+            Images.push(Url);
+            
+            const Img = document.createElement("img");
+            Img.src = Url;
+            Img.title = "Click to remove";
+            
+            Img.onclick = function() {
+                Images = Images.filter(Src => Src !== Url);
+                Img.remove();
+            };
+            
+            ImageBox.appendChild(Img);
+            ImageUrlInput.value = "";
+        }
+
+        ProductForm.onsubmit = async function(E) {
+        E.preventDefault();
+
+        const Data = {
+            Auth: PasswordInput.value,
+            Name: NameInput.value,
+            Urls: Images
+        };
+
+        const Response = await fetch("/AddProduct", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(Data)
+        });
+
+        const Result = await Response.json();
+
+        if (Response.ok) {
+            alert(Result.Message);
+            window.location.reload() // Reload page to remove old data
+        } else {
+            alert("Error: " + Result.Message);
+        }
+        };
+    </script>
+</body>
+</html>
