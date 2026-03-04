@@ -1,0 +1,82 @@
+[
+    {
+        "name": "DR",
+        "type": "dh",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772418101300,
+        "startTime": 1772418101300,
+        "startLevel": 95,
+        "mcStatus": true
+    },
+    {
+        "name": "rt",
+        "type": "b",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772418087719,
+        "startTime": 1772418087719,
+        "startLevel": 0,
+        "mcStatus": true
+    },
+    {
+        "name": "758975",
+        "type": "b",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772418085898,
+        "startTime": 1772418085898,
+        "startLevel": 75,
+        "mcStatus": true
+    },
+    {
+        "name": "43657",
+        "type": "b",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772418013341,
+        "startTime": 1772418013341,
+        "startLevel": 50,
+        "mcStatus": true
+    },
+    {
+        "name": "134",
+        "type": "b",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772418089870,
+        "startTime": null,
+        "startLevel": 0,
+        "mcStatus": false
+    },
+    {
+        "name": "wer",
+        "type": "b",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772417765101,
+        "startTime": null,
+        "startLevel": 0,
+        "mcStatus": false
+    },
+    {
+        "name": "123",
+        "type": "b",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772417353331,
+        "startTime": null,
+        "startLevel": 0,
+        "mcStatus": false
+    },
+    {
+        "name": "12344",
+        "type": "b",
+        "capacity": 3,
+        "chargerSpeed": 2,
+        "toc": 1772416669789,
+        "startTime": null,
+        "startLevel": 0,
+        "mcStatus": false
+    }
+]
