@@ -1,12 +1,13 @@
 [
     {
-        "manufacturerId": "am-3637", 
-        "id": 1,
-        "name": "NeveRest Orbital 20 Gearmotor", 
+        "editable": false,
+        "manufacturerId": "am-3637",
+        "id": 0,
+        "name": "NeveRest Orbital 20 Gearmotor",
         "manufacturer": "andymark",
-        "tags":["motor", "actuator"],
-        "stats":{
-            "type":"motor",
+        "tags": ["motor", "actuator"],
+        "stats": {
+            "type": "motor",
             "connector_types": ["JST-VH-2", "Anderson Powerpoles"],
             "max_power": 14,
             "stall_current": 11,
@@ -20,29 +21,170 @@
         },
         "quantity": 4,
         "needed": 0,
-        "icon":"https://andymark.com/cdn/shop/files/am-3637b_700x700.jpg?v=1749948680"
+        "icon": "https://andymark.com/cdn/shop/files/am-3637b_700x700.jpg?v=1749948680",
+        "links": {
+            "CAD": "https://andymark.com",
+            "Store": "https://andymark.com/products/neverest-orbital-gearmotors"
+        }
     },
     {
-        "manufacturerId": "75001-37", 
-        "id": 12,
-        "name": "Maverick Hex Planetary Gearbox Motor w/Encoder (3.7:1 Ratio gearbox)", 
-        "manufacturer": "studica",
-        "tags":["motor", "actuator"],
-        "stats":{
-            "type":"motor",
-            "connector_types": ["Anderson Powerpoles"],
-            "max_power": 14,
-            "stall_current": 11,
-            "voltage": 12,
-            "output_shaft_length": 6,
-            "no_load_speed": 1648.65,
-            "cpr": 88.8,
-            "ppr": null,
-            "stall_torque": 0.47,
-            "shaft_type": "6mmHex"
+        "editable": false,
+        "manufacturerId": "REV-41-1097",
+        "id": 1,
+        "name": "Smart Robot Servo",
+        "manufacturer": "rev",
+        "tags": ["servo", "actuator"],
+        "stats": {
+            "type": "servo",
+            "size": [40.2, 20.0, 38.0],
+            "weight": 58.12,
+            "speed": 0.14,
+            "angular_range": 270,
+            "gear_material": "metal",
+            "spline_type": "25T",
+            "spline_thread_type": "M3",
+            "spline_internal_depth": 6,
+            "stall_current": 2,
+            "stall_torque": 1.33
         },
-        "quantity": 2,
-        "needed": 2,
-        "icon":"https://www.studica.com/images/thumbs/0004207_maverick-12v-dc-gear-motor-611-wencoder.jpeg"
+        "quantity": 4,
+        "needed": 0,
+        "icon": "https://cdn11.bigcommerce.com/s-t3eo8vwp22/images/stencil/960w/products/115/2761/Smart_Robot_Servo_Photo_From_Bundle_Shot-noflag__84262.1650574026.png?c=2",
+        "links": {
+            "CAD": "https://www.revrobotics.com/content/cad/REV-41-1097.STEP",
+            "Store": "https://www.revrobotics.com/rev-41-1097/?searchid=0&search_query=servo"
+        }
+    },
+    {
+        "editable": false,
+        "manufacturerId": "REV-41-1755",
+        "id": 2,
+        "name": "45mm U Channel - 24mm",
+        "manufacturer": "rev",
+        "tags": ["structural"],
+        "stats": {
+            "type": "structural",
+            "size": [45, 24, 45]
+        },
+        "quantity": 4,
+        "needed": 0,
+        "icon": "https://cdn11.bigcommerce.com/s-t3eo8vwp22/images/stencil/1500x1500/attribute_rule_images/2456_source_1757365882.png",
+        "links": {
+            "CAD": "https://revrobotics.com/content/cad/REV-41-1755.STEP",
+            "Store": "https://www.revrobotics.com/45mm-u-channels/?searchid=5107457&search_query=u+channel"
+        }
+    },
+    {
+        "editable": false,
+        "manufacturerId": "70191",
+        "id": 3,
+        "name": "Tamiya Male to PowerPole Adaptive Connector Cable",
+        "manufacturer": "studica",
+        "tags": ["electrical", "cable"],
+        "stats": {
+            "type": "electrical",
+
+            "capacity": null,
+            "voltage": null,
+            "weight": null,
+            "wire_gauge": null,
+            "size": null,
+            "connector_types": ["Tamiya", "Anderson Powerpoles"],
+            "replaceable_fuse": null,
+            "max_discharge": null,
+            "wire_length": null,
+
+            "charge_rates": null
+        },
+        "quantity": 4,
+        "needed": 0,
+        "icon": "https://www.studica.ca/images/thumbs/0011463_tamiya-male-to-powerpole-adaptive-connector-cable.jpeg",
+        "links": {
+            "CAD": null,
+            "Store": "https://www.studica.ca/en/tamiya-male-to-powerpole-adaptive-connector-cable"
+        }
+    },
+    {
+        "editable": false,
+        "manufacturerId": "REV-31-1537",
+        "id": 5,
+        "name": "Color Sensor V2",
+        "manufacturer": "rev",
+        "tags": ["sensor"],
+        "stats": {
+            "type": "sensor",
+            "sensor_type": "I2C",
+            "max_operating_voltage": 3.3,
+            "size": [41.7, 17, 15],
+
+            "proximity_sensor_range": [50, 250],
+
+            "distance_sensor_range": null,
+            "fov": null,
+
+            "imu": null,
+
+            "cpr": null
+        },
+        "quantity": 4,
+        "needed": 0,
+        "icon": "https://www.studica.ca/images/thumbs/0011463_tamiya-male-to-powerpole-adaptive-connector-cable.jpeg",
+        "links": {
+            "CAD": null,
+            "Store": "https://www.studica.ca/en/tamiya-male-to-powerpole-adaptive-connector-cable"
+        }
+    },
+    {
+        "editable": false,
+        "manufacturerId": null,
+        "id": 7,
+        "name": "My Random Brick",
+        "manufacturer": "custom",
+        "tags": ["3d-printed"],
+        "stats": {
+            "type": "3d-printed",
+            "size": [12, 36, 24],
+            "infill": 15,
+            "filament": "PLA",
+            "wall_loops": 2,
+            "infill_pattern": "grid",
+            "support": false,
+            "support_type": null,
+            "on_buildplate_only": null,
+            "remove_small_overhangs": null,
+            "threshold_angle": null,
+            "brim_type": "auto",
+            "brim_width": null,
+            "brim_object_gap": null,
+            "filament_amount": 3.32,
+            "cost": 0.08,
+            "time": [0, 17]
+        },
+        "quantity": 4,
+        "needed": 0,
+        "icon": "",
+        "links": {
+            "CAD": "https://cad.onshape.com/documents/1b7e1ed77c93145af68af8b7/w/cb1a8cec618c9aeb3b96654c/e/0b940a8cad20cb36c01eb9a2?renderMode=0&uiState=697f98104759a5ddb4abf51b",
+            "Store": null
+        }
+    },
+    {
+        "editable": false,
+        "manufacturerId": null,
+        "id": 7,
+        "name": "My Random Plate",
+        "manufacturer": "custom",
+        "tags": ["machined"],
+        "stats": {
+            "type": "machined",
+            "size": [80, 42, 1.588]
+        },
+        "quantity": 4,
+        "needed": 0,
+        "icon": "",
+        "links": {
+            "CAD": "https://cad.onshape.com/documents/1b7e1ed77c93145af68af8b7/w/cb1a8cec618c9aeb3b96654c/e/0b940a8cad20cb36c01eb9a2?renderMode=0&uiState=697f98104759a5ddb4abf51b",
+            "Store": null
+        }
     }
 ]

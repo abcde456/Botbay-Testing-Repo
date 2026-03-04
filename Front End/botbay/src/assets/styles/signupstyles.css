@@ -1,11 +1,11 @@
-.logocontainer{
+.logocontainer {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: row;
 }
 
-.signupheader{
+.signupheader {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -13,111 +13,113 @@
     box-sizing: border-box;
     margin: 0;
     color: white;
-    font-family: 'RobotoCondensedBI';
+    font-family: "RobotoCondensedBI";
     font-size: 4rem;
     width: auto;
     text-align: center;
 }
 
 .signuplogo {
-	box-sizing: border-box;
-	padding: 0.625rem;
-	height: auto;
-	max-height: 100px;
-	max-width: 67%;
+    box-sizing: border-box;
+    padding: 0.625rem;
+    height: auto;
+    max-height: 100px;
+    max-width: 67%;
 }
 
 .centercontainer {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .contentcontainer {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	width: 35%;
-	background-color: #61616152;
-	border-radius: 10px;
-	box-sizing: border-box;
-	padding: 75px;
-	box-shadow: 0 10px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 35%;
+    background-color: #61616152;
+    border-radius: 10px;
+    box-sizing: border-box;
+    padding: 75px;
+    box-shadow: 0 10px 12px rgba(0, 0, 0, 0.1);
 }
 
 .inputcontainer {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 70%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 70%;
 }
 
 .inputcontainer * {
-	box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-.inputheader, .signupinput, .password-wrapper {
-	width: 95%;
-	margin-top: 8px;
+.inputheader,
+.signupinput,
+.password-wrapper {
+    width: 95%;
+    margin-top: 8px;
 }
 
 .signupinput {
-	font-size: 1.3rem;
-	font-family: "Inter", sans-serif;
-	padding: 12px 15px;
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	outline: none;
-	background-color: white;
+    font-size: 1.3rem;
+    font-family: "Inter", sans-serif;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    background-color: white;
 }
 
 .password-wrapper {
-	position: relative;
-	display: flex;
-	align-items: center;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .passwordinput {
-	width: 100%;
-	font-size: 1.5rem;
-	font-family: "Inter", sans-serif;
-	padding: 12px 50px 12px 15px;
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	outline: none;
-	background-color: white;
+    width: 100%;
+    font-size: 1.5rem;
+    font-family: "Inter", sans-serif;
+    padding: 12px 50px 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    background-color: white;
 }
 
 .eye-button {
-	position: absolute;
-	right: 15px;
-	background: none;
-	border: none;
-	cursor: pointer;
-	color: #666;
-	display: flex;
-	padding: 0;
+    position: absolute;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    padding: 0;
 }
 
 .inputheader {
-	font-size: 1.5rem;
-	font-family: "Inter";
-	color: white;
-	text-align: left;
-	margin: 10px;
+    font-size: 1.5rem;
+    font-family: "Inter";
+    color: white;
+    text-align: left;
+    margin: 10px;
 }
 
-.bottomtext{
+.bottomtext {
     font-size: 1.1rem;
     font-family: "Inter";
     color: white;
     text-align: center;
 }
 
-.forgotpasswordspan{
+.forgotpasswordspan {
     color: grey;
     font-size: 1.1rem;
     font-family: "Inter";
@@ -126,13 +128,13 @@
     transition: text-decoration-color 300ms ease;
 }
 
-.forgotpasswordspan:hover{
+.forgotpasswordspan:hover {
     cursor: pointer;
     text-decoration: underline grey;
     transition: text-decoration-color 300ms ease;
 }
 
-.bottomcontainer{
+.bottomcontainer {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -142,12 +144,12 @@
     padding: 15px;
 }
 
-.signupbutton{
+.signupbutton {
     width: 75%;
     color: white;
     font-family: "Interbold";
     font-size: 1.5rem;
-    background-color: #6161618A;
+    background-color: #6161618a;
     border-radius: 0.625rem;
     border: 0.0625rem solid transparent;
     filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
@@ -189,14 +191,14 @@
         background-color: white;
     }
 
-    .bottomtext{
+    .bottomtext {
         font-size: 2.2rem;
         font-family: "Inter";
         color: white;
         text-align: center;
     }
 
-    .forgotpasswordspan{
+    .forgotpasswordspan {
         color: grey;
         font-size: 2.2rem;
         font-family: "Inter";
@@ -205,12 +207,12 @@
         transition: text-decoration-color 300ms ease;
     }
 
-    .signupbutton{
+    .signupbutton {
         width: 75%;
         color: white;
         font-family: "Interbold";
         font-size: 3rem;
-        background-color: #6161618A;
+        background-color: #6161618a;
         border-radius: 0.625rem;
         border: 0.0625rem solid transparent;
         filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
@@ -261,14 +263,14 @@
         background-color: white;
     }
 
-    .bottomtext{
+    .bottomtext {
         font-size: 3.5rem;
         font-family: "Inter";
         color: white;
         text-align: center;
     }
 
-    .forgotpasswordspan{
+    .forgotpasswordspan {
         color: grey;
         font-size: 3.5rem;
         font-family: "Inter";
@@ -277,12 +279,12 @@
         transition: text-decoration-color 300ms ease;
     }
 
-    .signupbutton{
+    .signupbutton {
         width: 75%;
         color: white;
         font-family: "Interbold";
         font-size: 4.3rem;
-        background-color: #6161618A;
+        background-color: #6161618a;
         border-radius: 0.625rem;
         border: 0.0625rem solid transparent;
         filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));

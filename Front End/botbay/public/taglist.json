@@ -1,6 +1,10 @@
 [
-    {"name": "electrical", "color": "#FF5733" },
-    {"name": "actuator", "color": "#33C1FF" },
-    {"name": "motor", "color": "#333333" },
-    {"name": "structural", "color": "#F5F5F5" }
+    { "name": "electrical", "color": "#FF5733", "deletable": false },
+    { "name": "actuator", "color": "#33C1FF", "deletable": false },
+    { "name": "motor", "color": "#333333", "deletable": false },
+    { "name": "structural", "color": "#F5F5F5", "deletable": false },
+    { "name": "servo", "color": "#1100ff", "deletable": false },
+    { "name": "sensor", "color": "#f8e61b", "deletable": false },
+    { "name": "3d-printed", "color": "#7ed321", "deletable": false },
+    { "name": "machined", "color": "#d0021b", "deletable": false }
 ]

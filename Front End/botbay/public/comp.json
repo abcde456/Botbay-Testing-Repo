@@ -1,0 +1,10 @@
+{
+    "name": "Qualifier 1",
+    "date": "2026-10-31",
+    "needed": [
+        { "id": 1, "needed": 4, "packed": 2 },
+        { "id": 2, "needed": 4, "packed": 2 },
+        { "id": 3, "needed": 4, "packed": 2 },
+        { "id": 4, "needed": 4, "packed": 2 }
+    ]
+}

@@ -1,14 +1,10 @@
 { // Set to change
 
-"Name" : "<Part Name>",
-"Images" : ["<Image Links>"],
-"Link" : "<Link to where you can buy new parts>",
-"MoreInfo" : { // This will change per type of part, this one will be a motor
-"PartType" : "Motor",
-"MotorRPM" : 650,
-"MotorCPR" : 450
-},
-"CadLinks" : ["<Links to cad file downloads>"]
+"Name" : "Unknown",
+"Images" : [""],
+"Link" : "Unknown",
+"MoreInfo" : {},
+"CadLinks" : []
 
 
 

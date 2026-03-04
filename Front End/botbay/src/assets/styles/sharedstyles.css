@@ -1,31 +1,31 @@
 @font-face {
-  font-family: 'IniriaSansBold';
-  src: url('./fonts/InriaSans-Bold.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+    font-family: "IniriaSansBold";
+    src: url("./fonts/InriaSans-Bold.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('./fonts/Inter.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+    font-family: "Inter";
+    src: url("./fonts/Inter.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }
 
 @font-face {
-  font-family: 'Interbold';
-  src: url('./fonts/Interbold.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+    font-family: "Interbold";
+    src: url("./fonts/Interbold.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }
 
 @font-face {
-  font-family: 'RobotoCondensedBI';
-  src: url('./fonts/RobotoCondensedBI.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+    font-family: "RobotoCondensedBI";
+    src: url("./fonts/RobotoCondensedBI.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }

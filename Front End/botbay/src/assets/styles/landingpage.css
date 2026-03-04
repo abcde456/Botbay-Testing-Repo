@@ -1,503 +1,509 @@
 html {
-  font-size: 0.8333vw !important;
+    font-size: 0.8333vw !important;
 }
 
-body{
-  overflow-x: hidden;
+body {
+    overflow-x: hidden;
 }
 
 .screencontainer {
-  width: 100vw;
-  height: 100vh;
-  background-image: radial-gradient(circle, #000056 0%, #2B0056 50%, #002B56 100%);
-  overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    background-image: radial-gradient(
+        circle,
+        #000056 0%,
+        #2b0056 50%,
+        #002b56 100%
+    );
+    overflow: hidden;
 }
 
 .navbar {
-  width: 100vw;
-  height: 10%;
-  display: flex;
-  flex-direction: row;
-  user-select: none;
+    width: 100vw;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    user-select: none;
 }
 
 .herocontainer {
-  width: 100vw;
-  height: 90%;
-  display: flex;
-  flex-direction: row;
+    width: 100vw;
+    height: 90%;
+    display: flex;
+    flex-direction: row;
 }
 
 .halfcontainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 50%;
-  height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 50%;
+    height: 100%;
 }
 
-.halfcontainersmallnav{
-  box-sizing: border-box;
-  padding: 30px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: row;
-  width: 50%;
-  height: 100%;
+.halfcontainersmallnav {
+    box-sizing: border-box;
+    padding: 30px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    width: 50%;
+    height: 100%;
 }
 
 .vertical33container {
-  display: flex;
-  flex-direction: row;
-  box-sizing: border-box;
-  padding: 3.125rem;
-  width: 100%;
-  height: 33.3%;
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+    padding: 3.125rem;
+    width: 100%;
+    height: 33.3%;
 }
 
 .vertical34container {
-  display: flex;
-  flex-direction: row;
-  box-sizing: border-box;
-  padding: 3.125rem;
-  width: 100%;
-  height: 33.4%;
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+    padding: 3.125rem;
+    width: 100%;
+    height: 33.4%;
 }
 
 .herotitle {
-  padding: 0;
-  margin: 0;
-  color: white;
-  font-family: 'IniriaSansBold';
-  font-size: 4rem;
+    padding: 0;
+    margin: 0;
+    color: white;
+    font-family: "IniriaSansBold";
+    font-size: 4rem;
 }
 
-.navtitle{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  box-sizing: border-box;
-  margin: 0;
-  color: white;
-  font-family: 'RobotoCondensedBI';
-  font-size: 4rem;
-  width: auto;
-  text-align: center;
+.navtitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    margin: 0;
+    color: white;
+    font-family: "RobotoCondensedBI";
+    font-size: 4rem;
+    width: auto;
+    text-align: center;
 }
 
 ul {
-  list-style-type: disc;
-  padding-left: 1.25rem;
+    list-style-type: disc;
+    padding-left: 1.25rem;
 }
 
 li {
-  margin-bottom: 0.5rem;
-  font-size: 1.5rem;
-  color: white;
-  font-family: "Inter";
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    color: white;
+    font-family: "Inter";
 }
 
 .leftcontainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
 }
 
 .rightcontainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: flex-end;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .navtexthelper {
-  align-items: center;
-  justify-content: space-evenly;
-  display: flex;
-  flex-direction: row;
-  width: 60%;
-  height: 100%;
+    align-items: center;
+    justify-content: space-evenly;
+    display: flex;
+    flex-direction: row;
+    width: 60%;
+    height: 100%;
 }
 
 .rowcontainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  flex-direction: row;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-direction: row;
 }
 
-.teamlogocontainer{
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  flex-direction: row;
+.teamlogocontainer {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-direction: row;
 }
 
-.teamlogo{
-  width: 128px;
-  height: auto;
-  user-select: none;
+.teamlogo {
+    width: 128px;
+    height: auto;
+    user-select: none;
 }
 
 .evenspreadflex {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
 .herobutton {
-  width: 35%;
-  color: white;
-  font-family: "Interbold";
-  font-size: 1.5rem;
-  background-color: #6161618A;
-  border-radius: 0.625rem;
-  border: 0.0625rem solid transparent;
-  filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
-  cursor: pointer;
-  user-select: none;
+    width: 35%;
+    color: white;
+    font-family: "Interbold";
+    font-size: 1.5rem;
+    background-color: #6161618a;
+    border-radius: 0.625rem;
+    border: 0.0625rem solid transparent;
+    filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
+    cursor: pointer;
+    user-select: none;
 }
 
 .herobutton:hover {
-  border-color: #ffffff;
+    border-color: #ffffff;
 }
 
 .navunderlinebutton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0;
-  margin: 0;
-  font-family: "Interbold";
-  font-weight: bolder;
-  color: white;
-  font-size: 1.5rem;
-  text-decoration: underline transparent;
-  transition: text-decoration-color 300ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    font-family: "Interbold";
+    font-weight: bolder;
+    color: white;
+    font-size: 1.5rem;
+    text-decoration: underline transparent;
+    transition: text-decoration-color 300ms ease;
 }
 
 .navunderlinebutton:hover {
-  cursor: pointer;
-  text-decoration: underline white;
+    cursor: pointer;
+    text-decoration: underline white;
 }
 
 .navbutton {
-  height: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Interbold";
-  color: white;
-  background-color: #330099;
-  border-radius: 0.625rem;
-  border: 0.0625rem solid transparent;
-  width: 28%;
-  font-size: 1.5rem;
-  cursor: pointer;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Interbold";
+    color: white;
+    background-color: #330099;
+    border-radius: 0.625rem;
+    border: 0.0625rem solid transparent;
+    width: 28%;
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
 .navbutton:hover {
-  border-color: #ffffff;
+    border-color: #ffffff;
 }
 
 .navlogo {
-  box-sizing: border-box;
-  padding: 0.625rem;
-  height: auto;
-  max-height: 95%;
-  max-width: 95%;
+    box-sizing: border-box;
+    padding: 0.625rem;
+    height: auto;
+    max-height: 95%;
+    max-width: 95%;
 }
 
 .heroicon {
-  width: auto;
-  height: 4rem;
+    width: auto;
+    height: 4rem;
 }
 
-.herolist li{
-  font-size: 1.5rem;
-  font-family: "Inter";
-}
-
-.aboutcontainer{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #000029;
-  width: 100%;
-  height: 100vh;
-}
-
-.abouttext{
-  width: 30%;
-  font-family: "Inter";
-  color: white;
-  font-size: 1.5rem;
-  text-align: center;
-}
-
-
-
-
-
-
-
-
-
-@media screen and (max-width: 1099px) {
-  .teamlogo{
-    width: 256px;
-    height: auto;
-  }
-
-  .abouttext{
-    width: 70%;
+.herolist li {
+    font-size: 1.5rem;
     font-family: "Inter";
-    color: white;
-    font-size: 2.5rem;
-    text-align: center;
-  }
+}
 
-  .navbutton{
-    height: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Interbold";
-    color: white;
-    background-color: #330099;
-    border-radius: 0.625rem;
-    border: 0.0625rem solid transparent;
-    width: 45%;
-    font-size: 4rem;
-    cursor: pointer;
-  }
-
-  .navunderlinebutton{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 0;
-    margin: 0;
-    font-family: "Interbold";
-    font-weight: bolder;
-    color: white;
-    font-size: 4rem;
-    text-decoration: underline transparent;
-    transition: text-decoration-color 300ms ease;
-  }
-
-  .navtexthelper {
-    align-items: center;
-    justify-content: space-evenly;
-    display: flex;
-    flex-direction: row;
-    width: 95%;
-    height: 100%;
-  }
-
-  .herocontainer {
-    width: 100vw;
-    height: 90%;
+.aboutcontainer {
     display: flex;
     flex-direction: column;
-  }
-
-  .rowcontainer {
-    box-sizing: border-box;
-    padding: 20px;
-    width: 100%;
-    height: auto;
-    display: flex;
-    max-height: 35%;
-    justify-content: space-evenly;
     align-items: center;
-    flex-direction: row;
-  }
-
-  .heroicon {
-    width: auto;
-    height: 7rem;
-  }
-
-  .evenspreadflex {
-    box-sizing: border-box;
-    padding: 20px;
+    justify-content: center;
+    background-color: #000029;
     width: 100%;
-    height: auto;
-    max-height: 25%;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-  }
+    height: 100vh;
+}
 
-  .herolist{
-    padding: 20px;
-    width: 50%;
-  }
-
-  .herolist li{
-    font-size: 3rem;
+.abouttext {
+    width: 30%;
     font-family: "Inter";
-  }
-
-  .herotitle {
-    padding: 60px;
-    margin: 0;
     color: white;
-    font-family: 'IniriaSansBold';
-    font-size: 8rem;
-  }
+    font-size: 1.5rem;
+    text-align: center;
+}
 
-  .navtitle{
-    display: inline-block;
-    padding: 50px;
-    box-sizing: border-box;
-    margin: 0;
-    color: white;
-    font-family: 'RobotoCondensedBI';
-    font-size: 8rem;
-    width: auto;
-  }
+@media screen and (max-width: 1099px) {
+    .teamlogo {
+        width: 256px;
+        height: auto;
+    }
 
-  .herobutton {
-    width: 35%;
-    color: white;
-    font-family: "Interbold";
-    font-size: 4rem;
-    background-color: #6161618A;
-    border-radius: 0.625rem;
-    border: 0.0625rem solid transparent;
-    filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
-    cursor: pointer;
-  }
+    .abouttext {
+        width: 70%;
+        font-family: "Inter";
+        color: white;
+        font-size: 2.5rem;
+        text-align: center;
+    }
+
+    .navbutton {
+        height: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Interbold";
+        color: white;
+        background-color: #330099;
+        border-radius: 0.625rem;
+        border: 0.0625rem solid transparent;
+        width: 45%;
+        font-size: 4rem;
+        cursor: pointer;
+    }
+
+    .navunderlinebutton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0;
+        margin: 0;
+        font-family: "Interbold";
+        font-weight: bolder;
+        color: white;
+        font-size: 4rem;
+        text-decoration: underline transparent;
+        transition: text-decoration-color 300ms ease;
+    }
+
+    .navtexthelper {
+        align-items: center;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: row;
+        width: 95%;
+        height: 100%;
+    }
+
+    .herocontainer {
+        width: 100vw;
+        height: 90%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .rowcontainer {
+        box-sizing: border-box;
+        padding: 20px;
+        width: 100%;
+        height: auto;
+        display: flex;
+        max-height: 35%;
+        justify-content: space-evenly;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    .heroicon {
+        width: auto;
+        height: 7rem;
+    }
+
+    .evenspreadflex {
+        box-sizing: border-box;
+        padding: 20px;
+        width: 100%;
+        height: auto;
+        max-height: 25%;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+    .herolist {
+        padding: 20px;
+        width: 50%;
+    }
+
+    .herolist li {
+        font-size: 3rem;
+        font-family: "Inter";
+    }
+
+    .herotitle {
+        padding: 60px;
+        margin: 0;
+        color: white;
+        font-family: "IniriaSansBold";
+        font-size: 8rem;
+    }
+
+    .navtitle {
+        display: inline-block;
+        padding: 50px;
+        box-sizing: border-box;
+        margin: 0;
+        color: white;
+        font-family: "RobotoCondensedBI";
+        font-size: 8rem;
+        width: auto;
+    }
+
+    .herobutton {
+        width: 35%;
+        color: white;
+        font-family: "Interbold";
+        font-size: 4rem;
+        background-color: #6161618a;
+        border-radius: 0.625rem;
+        border: 0.0625rem solid transparent;
+        filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
+        cursor: pointer;
+    }
 }
 
 @media screen and (max-width: 600px) {
-  .teamlogo{
-    width: 400px;
-    height: auto;
-  }
+    .teamlogo {
+        width: 400px;
+        height: auto;
+    }
 
-  .abouttext{
-    width: 80%;
-    font-family: "Inter";
-    color: white;
-    font-size: 3.5rem;
-    text-align: center;
-  }
+    .abouttext {
+        width: 80%;
+        font-family: "Inter";
+        color: white;
+        font-size: 3.5rem;
+        text-align: center;
+    }
 
-  .navbutton{
-    height: 50%;
+    .navbutton {
+        height: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Interbold";
+        color: white;
+        background-color: #330099;
+        border-radius: 0.625rem;
+        border: 0.0625rem solid transparent;
+        width: 45%;
+        font-size: 4rem;
+        cursor: pointer;
+    }
+
+    .navunderlinebutton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0;
+        margin: 0;
+        font-family: "Interbold";
+        font-weight: bolder;
+        color: white;
+        font-size: 4rem;
+        text-decoration: underline transparent;
+        transition: text-decoration-color 300ms ease;
+    }
+
+    .navtexthelper {
+        align-items: center;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: row;
+        width: 95%;
+        height: 100%;
+    }
+
+    .herocontainer {
+        width: 100vw;
+        height: 90%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .rowcontainer {
+        box-sizing: border-box;
+        padding: 60px;
+        width: 100%;
+        height: auto;
+        display: flex;
+        max-height: 35%;
+        justify-content: space-evenly;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    .heroicon {
+        width: auto;
+        height: 12rem;
+    }
+
+    .evenspreadflex {
+        box-sizing: border-box;
+        padding: 60px;
+        width: 100%;
+        height: auto;
+        max-height: 25%;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+    .herolist {
+        padding: 60px;
+        width: 50%;
+    }
+
+    .herolist li {
+        font-size: 3rem;
+        font-family: "Inter";
+    }
+
+    .herotitle {
+        padding: 60px;
+        margin: 0;
+        color: white;
+        font-family: "IniriaSansBold";
+        font-size: 8rem;
+    }
+
+    .herobutton {
+        width: 35%;
+        color: white;
+        font-family: "Interbold";
+        font-size: 4rem;
+        background-color: #6161618a;
+        border-radius: 0.625rem;
+        border: 0.0625rem solid transparent;
+        filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
+        cursor: pointer;
+    }
+}
+
+.thirdcontainer {
     display: flex;
-    align-items: center;
     justify-content: center;
-    font-family: "Interbold";
-    color: white;
-    background-color: #330099;
-    border-radius: 0.625rem;
-    border: 0.0625rem solid transparent;
-    width: 45%;
-    font-size: 4rem;
-    cursor: pointer;
-  }
-
-  .navunderlinebutton{
-    display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 0;
-    margin: 0;
-    font-family: "Interbold";
-    font-weight: bolder;
-    color: white;
-    font-size: 4rem;
-    text-decoration: underline transparent;
-    transition: text-decoration-color 300ms ease;
-  }
-
-  .navtexthelper {
-    align-items: center;
-    justify-content: space-evenly;
-    display: flex;
-    flex-direction: row;
-    width: 95%;
-    height: 100%;
-  }
-
-  .herocontainer {
-    width: 100vw;
-    height: 90%;
-    display: flex;
     flex-direction: column;
-  }
-
-  .rowcontainer {
-    box-sizing: border-box;
-    padding: 60px;
-    width: 100%;
-    height: auto;
-    display: flex;
-    max-height: 35%;
-    justify-content: space-evenly;
-    align-items: center;
-    flex-direction: row;
-  }
-
-  .heroicon {
-    width: auto;
-    height: 12rem;
-  }
-
-  .evenspreadflex {
-    box-sizing: border-box;
-    padding: 60px;
-    width: 100%;
-    height: auto;
-    max-height: 25%;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-  }
-
-  .herolist{
-    padding: 60px;
-    width: 50%;
-  }
-
-  .herolist li{
-    font-size: 3rem;
-    font-family: "Inter";
-  }
-
-  .herotitle {
-    padding: 60px;
-    margin: 0;
-    color: white;
-    font-family: 'IniriaSansBold';
-    font-size: 8rem;
-  }
-
-  .herobutton {
-    width: 35%;
-    color: white;
-    font-family: "Interbold";
-    font-size: 4rem;
-    background-color: #6161618A;
-    border-radius: 0.625rem;
-    border: 0.0625rem solid transparent;
-    filter: drop-shadow(0rem 0.25rem 0.25rem rgba(0, 0, 0, 0.25));
-    cursor: pointer;
-  }
+    width: 33%;
+    min-height: 100%;
 }

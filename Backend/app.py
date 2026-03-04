@@ -26,7 +26,12 @@ def ServerMessage(Status : str):
 @Websocket.on("Ping")
 def Ping():
     ServerMessage("Server is healthy")
-    
+
+
+@Websocket.on("GetParts")
+def GetParts():
+    pass
+
 
 @App.route("/")
 def Debug():
@@ -34,7 +39,8 @@ def Debug():
 
 
 @App.route("/AddProduct", methods=["GET", "POST"])
-def AddProduct():
+def AddProduct(Request):
+
     Request = flask.request
 
     if Request.method == "POST":
@@ -60,8 +66,9 @@ def AddProduct():
         
     
 
+DataBaseService.InitalizeDB()
 
-
+print(DataBaseService.GetData(1,1,1))
 
 Websocket.run(App,debug=True)
 

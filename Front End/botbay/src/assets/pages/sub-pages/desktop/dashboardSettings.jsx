@@ -1,9 +1,7 @@
-import React from 'react';
+import React from "react";
 
-function SettingsPageDesktop(){
-    return (
-        <></>
-    )
+function SettingsPageDesktop() {
+    return <></>;
 }
 
 export default SettingsPageDesktop;

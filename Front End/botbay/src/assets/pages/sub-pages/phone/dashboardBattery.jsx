@@ -1,9 +1,7 @@
-import React from 'react';
+import React from "react";
 
-function BatterPagePhone(){
-    return (
-        <></>
-    )
+function BatterPagePhone() {
+    return <></>;
 }
 
 export default BatterPagePhone;

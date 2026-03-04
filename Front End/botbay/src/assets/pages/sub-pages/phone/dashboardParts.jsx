@@ -1,9 +1,7 @@
-import React from 'react';
+import React from "react";
 
-function PartsPagePhone(){
-    return (
-        <></>
-    )
+function PartsPagePhone() {
+    return <></>;
 }
 
 export default PartsPagePhone;

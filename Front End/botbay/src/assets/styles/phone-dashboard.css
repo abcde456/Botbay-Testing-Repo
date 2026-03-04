@@ -1,0 +1,207 @@
+.phone-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms ease;
+}
+
+.phone-sidebar-overlay-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.phone-sidebar {
+    background-color: #1d1e2c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 0;
+    width: 13%;
+    height: 100vh;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.phone-sidebar-expanded {
+    width: 50vw;
+    align-items: center;
+}
+
+.phone-sidebar-toggle {
+    color: #ffffff;
+    font-size: 4rem;
+    cursor: pointer;
+    margin-bottom: 40px;
+    transition: transform 200ms ease;
+}
+
+.phone-sidebar-toggle:active {
+    transform: scale(0.9);
+}
+
+.phone-sidebar-logo {
+    box-sizing: border-box;
+    padding: 0.625rem;
+    height: 12.5vw;
+    width: 12.5vw;
+    object-fit: contain;
+    margin-bottom: 30px;
+}
+
+.phone-sidebar-item-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 15px;
+}
+
+.phone-sidebar-item {
+    width: 80%;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 25px;
+    transition: all 200ms ease;
+    cursor: pointer;
+}
+
+.phone-sidebar-expanded .phone-sidebar-item {
+    justify-content: flex-start;
+    padding: 25px 35px;
+}
+
+.phone-sidebar-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.phone-sidebar-icon-wrapper {
+    color: #cbd5e1;
+    font-size: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.phone-sidebar-text {
+    margin: 0 0 0 25px;
+    color: #cbd5e1;
+    font-family: "Inter";
+    font-size: 4rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.phone-sidebar-item-highlighted {
+    background-color: #281a68;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.phone-sidebar-item-highlighted .phone-sidebar-icon-wrapper,
+.phone-sidebar-item-highlighted .phone-sidebar-text {
+    color: white;
+    font-weight: 800;
+}
+
+.dashboardcontainer {
+    flex: 1;
+    margin-left: 13%;
+}
+
+@media (min-width: 1199px) {
+    .dashboardcontainer {
+        margin-left: 0;
+    }
+}
+
+.phone-part-card {
+    background: #1d1e2c;
+    border: 2px solid #44327a;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    color: white;
+}
+
+.phone-card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.phone-card-id-section {
+    display: flex;
+    align-items: center;
+    font-size: 2rem;
+    color: #888;
+}
+
+.phone-card-icon {
+    width: 5rem;
+    height: 5rem;
+    margin-right: 1.5rem;
+    border-radius: 10px;
+}
+
+.phone-card-actions {
+    display: flex;
+    gap: 2.5rem;
+}
+
+.phone-card-action-btn {
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.phone-delete-btn {
+    color: #d94a4a;
+}
+
+.phone-card-part-name {
+    font-size: 4rem !important;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.phone-card-stats-row {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 1.5rem;
+    justify-content: space-around;
+}
+
+.phone-card-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.phone-card-stat label {
+    font-size: 1.8rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.phone-card-stat span {
+    font-size: 4rem !important;
+    font-weight: 800;
+}

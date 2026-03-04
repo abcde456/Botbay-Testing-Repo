@@ -1,0 +1,5 @@
+NEXT UPDATE:
+Add battery history
+Add priority for critical stock
+Add ready batteries
+Align search bar with table

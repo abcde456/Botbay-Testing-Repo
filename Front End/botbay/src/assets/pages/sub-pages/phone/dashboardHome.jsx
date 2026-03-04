@@ -1,9 +1,7 @@
-import React from 'react';
+import React from "react";
 
-function HomePagePhone(){
-    return (
-        <></>
-    )
+function HomePagePhone() {
+    return <></>;
 }
 
 export default HomePagePhone;
