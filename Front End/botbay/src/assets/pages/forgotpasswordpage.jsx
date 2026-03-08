@@ -1,21 +1,47 @@
-import React, { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import signUpLogo from "../images/LogoTrans.png";
+import { sendPasswordResetEmail } from "../scripts/auth.js";
 
 import "../styles/signupstyles.css";
 import "../styles/sharedstyles.css";
 
-function SignUpPage() {
-    const [showPassword, setShowPassword] = useState(false);
-    const [password, setPassword] = useState("");
+function ResetPasswordPage() {
+    const [email, setEmail] = useState("");
+    const [notice, setNotice] = useState({ message: "", color: "transparent" });
+    const [loading, setLoading] = useState(false);
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
+    // --- PHONE CHECK LOGIC ---
+    const [isPhone, setIsPhone] = useState(window.innerWidth <= 1199);
+
+    useEffect(() => {
+        const handleResize = () => setIsPhone(window.innerWidth <= 1199);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const handleResetAction = async () => {
+        if (!email) {
+            setNotice({ message: "Please enter your email.", color: "red" });
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await sendPasswordResetEmail(email);
+            setNotice({
+                message: "Reset link sent! Check your inbox.",
+                color: "green",
+            });
+        } catch (err) {
+            setNotice({ message: err.message, color: "red" });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="screencontainer">
-            <div className="centercontainer">
+            <div className="centercontainer-signup">
                 <div className="contentcontainer">
                     <div className="logocontainer">
                         <img
@@ -31,6 +57,9 @@ function SignUpPage() {
                             className="signupinput"
                             type="email"
                             placeholder="email@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={loading}
                         />
                         <div className="bottomcontainer">
                             <p className="bottomtext">
@@ -39,16 +68,27 @@ function SignUpPage() {
                             <p
                                 id="noticetext"
                                 style={{
-                                    color: "transparent",
-                                    fontSize: "0rem",
+                                    color: notice.color,
+                                    fontSize: notice.message
+                                        ? isPhone
+                                            ? "4rem"
+                                            : "1rem"
+                                        : "0rem",
+                                    transition: "0.3s ease",
+                                    marginTop: isPhone ? "20px" : "10px",
+                                    textAlign: "center",
                                 }}
                             >
-                                Hello
+                                {notice.message || "Hello"}
                             </p>
                         </div>
                         <div className="bottomcontainer">
-                            <button className="signupbutton">
-                                Reset Password
+                            <button
+                                className="signupbutton"
+                                onClick={handleResetAction}
+                                disabled={loading}
+                            >
+                                {loading ? "Sending..." : "Reset Password"}
                             </button>
                         </div>
                     </div>
@@ -58,4 +98,4 @@ function SignUpPage() {
     );
 }
 
-export default SignUpPage;
+export default ResetPasswordPage;

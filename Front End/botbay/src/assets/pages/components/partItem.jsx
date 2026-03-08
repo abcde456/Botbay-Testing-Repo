@@ -3,6 +3,8 @@ import { IoTrashSharp } from "react-icons/io5";
 import { PiPencilSimple, PiPencilSimpleSlash } from "react-icons/pi";
 import WarningPopup from "./warningpopup";
 
+import { cloudDeletePart } from "../../scripts/database";
+
 function PartItem({ part, onRowClick, onDelete, onEdit }) {
     const [imgLoaded, setImgLoaded] = useState(true);
     const [warningOn, setWarningOn] = useState(false);
@@ -12,12 +14,15 @@ function PartItem({ part, onRowClick, onDelete, onEdit }) {
 
     if (!visible) return null;
 
-    const deletePart = () => {
-        const data = JSON.parse(localStorage.getItem("partData")) || [];
-        const updated = data.filter((p) => p.id !== part.id);
-        localStorage.setItem("partData", JSON.stringify(updated));
+    const deletePart = async () => {
+        // Call our unified utility
+        await cloudDeletePart(part.id);
+
+        // Update UI state immediately
         setVisible(false);
-        onDelete();
+
+        // Call the parent callback if it exists
+        if (onDelete) onDelete();
     };
 
     const [isPhone, setIsPhone] = useState(window.innerWidth < 1200);

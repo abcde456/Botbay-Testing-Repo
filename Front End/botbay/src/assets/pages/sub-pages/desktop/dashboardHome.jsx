@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
     PieChart,
     Pie,
@@ -17,11 +17,33 @@ import {
 import "../../../styles/dashboard.css";
 import { useMediaQuery } from "react-responsive";
 
-function HomePageDesktop({ handleLowStockClick }) {
-    const isPhone = useMediaQuery({ query: "(max-width: 1199px)" });
+import {
+    fetchGroupData,
+    saveAdminList,
+    inviteUserByUUID,
+    removeMember,
+    fetchInvitedUsers,
+    removeInvitedUser,
+} from "../../../scripts/auth.js";
+
+import WarningPopup from "../../components/warningpopup";
+import Blocker from "../../components/blocker";
+import { MdContentCopy, MdCheck } from "react-icons/md";
+
+function HomePageDesktop({ handleLowStockClick, handleBatteryClick }) {
+    const [isPhone, setIsPhone] = useState(window.innerWidth < 1200);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsPhone(window.innerWidth < 1200);
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const partDataRaw = localStorage.getItem("partData");
-    const tagListRaw = localStorage.getItem("taglist");
+    const taglistRaw = localStorage.getItem("taglist");
     const batteryListRaw = localStorage.getItem("batteryList");
 
     const partData = useMemo(() => {
@@ -32,13 +54,13 @@ function HomePageDesktop({ handleLowStockClick }) {
         }
     }, [partDataRaw]);
 
-    const tagList = useMemo(() => {
+    const taglist = useMemo(() => {
         try {
-            return tagListRaw ? JSON.parse(tagListRaw) : [];
+            return taglistRaw ? JSON.parse(taglistRaw) : [];
         } catch (e) {
             return [];
         }
-    }, [tagListRaw]);
+    }, [taglistRaw]);
 
     const batteryList = useMemo(() => {
         try {
@@ -49,8 +71,8 @@ function HomePageDesktop({ handleLowStockClick }) {
     }, [batteryListRaw]);
 
     const tagColorMap = useMemo(() => {
-        return Object.fromEntries(tagList.map((t) => [t.name, t.color]));
-    }, [tagList]);
+        return Object.fromEntries(taglist.map((t) => [t.name, t.color]));
+    }, [taglist]);
 
     const chartData = useMemo(() => {
         const tagCounts = {};
@@ -68,7 +90,7 @@ function HomePageDesktop({ handleLowStockClick }) {
 
     const totalParts = partData.length;
     const totalQuantity = partData.reduce(
-        (acc, part) => acc + (part.quantity || 0),
+        (acc, part) => acc + Number(part.quantity || 0),
         0,
     );
 
@@ -132,43 +154,729 @@ function HomePageDesktop({ handleLowStockClick }) {
 
     const totalBatteries = batteryList.length;
 
+    const [groupMembers, setGroupMembers] = useState([]);
+    const [groupId, setGroupId] = useState(null);
+    const [isInvitePopupOpen, setIsInvitePopupOpen] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState("");
+
+    const [invitedUsers, setInvitedUsers] = useState([]);
+
+    useEffect(() => {
+        const loadInvites = async () => {
+            if (groupId !== undefined && groupId !== null) {
+                const data = await fetchInvitedUsers(groupId);
+                setInvitedUsers(data);
+            }
+        };
+        loadInvites();
+    }, [groupId]);
+
+    useEffect(() => {
+        console.log("Dashboard mounted, fetching members...");
+        loadData();
+    }, []);
+
+    // 1. Fetching logic simplified
+    const loadData = async () => {
+        const result = await fetchGroupData();
+
+        if (result.success) {
+            setGroupMembers(result.members);
+            setIsUserAdmin(result.isAdmin);
+            setGroupId(result.groupId);
+        } else {
+            showNotice(result.error, true);
+        }
+    };
+    // 2. Local toggle remains same (UI only)
+    const handleAdminToggle = (userId) => {
+        setGroupMembers((prev) =>
+            prev.map((m) =>
+                m.id === userId ? { ...m, isAdmin: !m.isAdmin } : m,
+            ),
+        );
+    };
+
+    // 3. Save logic calling auth.js
+    const saveMemberUpdates = async () => {
+        if (!groupId) return;
+
+        // Filter the groupMembers state to get IDs of everyone checked as Admin
+        const newAdminList = groupMembers
+            .filter((m) => m.isAdmin)
+            .map((m) => m.id);
+
+        // Call the secure RPC
+        const { success, message } = await saveAdminList(groupId, newAdminList);
+
+        if (success) {
+            showNotice(message); // Green popup
+        } else {
+            showNotice(message, true); // Red popup (shows "Unauthorized" if they tried to hack it)
+            loadData(); // Revert the checkboxes to the real database state
+        }
+    };
+
+    // 4. Invite logic calling auth.js
+    const handleSendInvite = async () => {
+        // 1. Validation
+        if (!inviteEmail || !groupId) {
+            showNotice("Please enter a valid UUID", true);
+            return;
+        }
+
+        // 2. Call the RPC from auth.js
+        const { success, message } = await inviteUserByUUID(
+            inviteEmail,
+            groupId,
+        );
+
+        // 3. Handle UI Response
+        if (success) {
+            showNotice(message); // Uses the green popup
+            setIsInvitePopupOpen(false);
+            setInviteEmail("");
+
+            // Refresh the member list to show the new person
+            loadData();
+        } else {
+            showNotice(message, true); // Uses the red popup
+        }
+    };
+
+    const [statusPopup, setStatusPopup] = useState({
+        show: false,
+        message: "",
+        isError: false,
+    });
+
+    const showNotice = (msg, isErr = false) => {
+        setStatusPopup({ show: true, message: msg, isError: isErr });
+        setTimeout(() => setStatusPopup({ ...statusPopup, show: false }), 3000);
+    };
+
+    const handleRemoveMember = async (userId) => {
+        const { success, message } = await removeMember(userId, groupId);
+
+        if (success) {
+            setGroupMembers((prev) => prev.filter((m) => m.id !== userId));
+            showNotice(message); // Green popup
+        } else {
+            showNotice(message, true); // Red popup with 'Unauthorized' text
+        }
+    };
+
+    const [deletingUserId, setDeletingUserId] = useState(null);
+    const [isUpdatingAdmins, setIsUpdatingAdmins] = useState(false);
+    const [isUserAdmin, setIsUserAdmin] = useState(false);
+
+    const handleUninvite = async (uuidToRemove) => {
+        try {
+            const updatedList = await removeInvitedUser(groupId, uuidToRemove);
+
+            if (updatedList) {
+                setInvitedUsers(updatedList);
+            }
+        } catch (err) {
+            console.error("Failed to uninvite:", err);
+        }
+    };
+
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        if (!groupId) return;
+        navigator.clipboard.writeText(groupId);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
         <>
+            {statusPopup.show && (
+                <div
+                    style={{
+                        position: "fixed",
+                        bottom: isPhone ? "10%" : "20px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        backgroundColor: statusPopup.isError
+                            ? "#ff4d4d"
+                            : "#4CAF50",
+                        color: "white",
+                        padding: isPhone ? "3rem 5rem" : "15px 30px",
+                        borderRadius: "15px",
+                        fontSize: isPhone ? "3.5rem" : "1.2rem",
+                        zIndex: 1000,
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                        textAlign: "center",
+                        width: isPhone ? "80%" : "auto",
+                        transition: "all 0.3s ease",
+                    }}
+                >
+                    {statusPopup.message}
+                </div>
+            )}
+            {isInvitePopupOpen && (
+                <div
+                    className="d-createtagoverlay"
+                    style={{ padding: isPhone ? "40px" : "20px" }}
+                >
+                    <Blocker />
+                    <button
+                        className="d-partoverlay-exitbutton"
+                        onClick={() => setIsInvitePopupOpen(false)}
+                        style={{ fontSize: isPhone ? "5rem" : "2rem" }}
+                    >
+                        X
+                    </button>
+
+                    <h2
+                        style={{
+                            fontSize: isPhone ? "4.5rem" : "2rem",
+                            color: "white",
+                        }}
+                    >
+                        Invite User
+                    </h2>
+
+                    <input
+                        className="signupinput"
+                        placeholder="User UUID"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        style={{
+                            width: "90%",
+                            height: isPhone ? "10rem" : "50px",
+                            fontSize: isPhone ? "3.5rem" : "1rem",
+                            marginTop: "20px",
+                            paddingRight:
+                                (inviteEmail?.length || 0) >= 230
+                                    ? isPhone
+                                        ? "100px"
+                                        : "45px"
+                                    : "10px",
+                        }}
+                    />
+
+                    <button
+                        className="signupbutton"
+                        onClick={handleSendInvite}
+                        style={{
+                            width: "90%",
+                            height: isPhone ? "10rem" : "50px",
+                            fontSize: isPhone ? "3.5rem" : "1.2rem",
+                            marginTop: "30px",
+                        }}
+                    >
+                        Send Invite
+                    </button>
+                </div>
+            )}
             <div className="d-homepagecontainer">
                 <div className="d-titlecontainer">
                     <p>Home</p>
                 </div>
                 <div className="d-gridcontainer-3c2r">
-                    <div className="d-griditem-2r">
-                        <p id="d-griditem-title">Members</p>
-                        <table id="d-griditem-membertable">
-                            <tbody>
-                                <tr>
-                                    <th>Members</th>
-                                    <th>Admin</th>
-                                </tr>
-                                <tr>
-                                    <td>Test@email.com</td>
-                                    <td>
-                                        <input type="checkbox" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Test@email.com</td>
-                                    <td>
-                                        <input type="checkbox" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div className="d-griditem-membertable-bottombuttoncontainer">
-                            <button id="d-griditem-membertable-bottombuttoncontainer-1">
-                                Invite
-                            </button>
-                            <button id="d-griditem-membertable-bottombuttoncontainer-2">
-                                Update
-                            </button>
-                        </div>
+                    <div
+                        className="d-griditem-2r"
+                        style={{ overflowX: "hidden" }}
+                    >
+                        {isUserAdmin ? (
+                            <>
+                                {/* Scrollable Container for both tables */}
+                                <div
+                                    className="members-section-wrapper"
+                                    style={{
+                                        height: isPhone ? "auto" : "450px",
+                                        maxHeight: isPhone ? "none" : "75%",
+                                        overflowY: isPhone ? "visible" : "auto",
+                                        width: "100%",
+                                        paddingRight: "10px",
+                                    }}
+                                >
+                                    {/* --- MEMBERS TABLE --- */}
+                                    <p
+                                        style={{
+                                            fontSize: isPhone
+                                                ? "4rem"
+                                                : "1.5rem",
+                                            color: "white",
+                                            marginBottom: "15px",
+                                            fontWeight: "bold",
+                                        }}
+                                    >
+                                        Members
+                                    </p>
+                                    <table
+                                        id="d-griditem-membertable"
+                                        style={{
+                                            width: "100%",
+                                            borderCollapse: "collapse",
+                                        }}
+                                    >
+                                        <thead>
+                                            <tr
+                                                style={{
+                                                    borderBottom:
+                                                        "1px solid #444",
+                                                }}
+                                            >
+                                                <th
+                                                    style={{
+                                                        fontSize: isPhone
+                                                            ? "3rem"
+                                                            : "1rem",
+                                                        textAlign: "left",
+                                                        padding: "10px",
+                                                        color: "white",
+                                                    }}
+                                                >
+                                                    Member
+                                                </th>
+                                                <th
+                                                    style={{
+                                                        fontSize: isPhone
+                                                            ? "3rem"
+                                                            : "1rem",
+                                                        textAlign: "center",
+                                                        padding: "10px",
+                                                        color: "white",
+                                                    }}
+                                                >
+                                                    Admin
+                                                </th>
+                                                <th
+                                                    style={{
+                                                        width: isPhone
+                                                            ? "80px"
+                                                            : "50px",
+                                                    }}
+                                                ></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {groupMembers.map((member) => (
+                                                <tr
+                                                    key={member.id}
+                                                    className="member-row-hover"
+                                                    style={{
+                                                        height: isPhone
+                                                            ? "12rem"
+                                                            : "auto",
+                                                        borderBottom:
+                                                            "1px solid #222",
+                                                    }}
+                                                >
+                                                    <td
+                                                        style={{
+                                                            fontSize: isPhone
+                                                                ? "2.5rem"
+                                                                : "1rem",
+                                                            color: "white",
+                                                            padding: "10px",
+                                                        }}
+                                                    >
+                                                        {member.id.substring(
+                                                            0,
+                                                            8,
+                                                        )}
+                                                        ...
+                                                    </td>
+                                                    <td
+                                                        style={{
+                                                            textAlign: "center",
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={
+                                                                member.isAdmin
+                                                            }
+                                                            onChange={() =>
+                                                                handleAdminToggle(
+                                                                    member.id,
+                                                                )
+                                                            }
+                                                            style={{
+                                                                width: isPhone
+                                                                    ? "4rem"
+                                                                    : "20px",
+                                                                height: isPhone
+                                                                    ? "4rem"
+                                                                    : "20px",
+                                                            }}
+                                                        />
+                                                    </td>
+                                                    <td
+                                                        style={{
+                                                            textAlign: "center",
+                                                        }}
+                                                    >
+                                                        <button
+                                                            onClick={() =>
+                                                                setDeletingUserId(
+                                                                    member.id,
+                                                                )
+                                                            }
+                                                            style={{
+                                                                background:
+                                                                    "none",
+                                                                border: "none",
+                                                                color: "#ff4d4d",
+                                                                fontSize:
+                                                                    isPhone
+                                                                        ? "4rem"
+                                                                        : "1.5rem",
+                                                                cursor: "pointer",
+                                                            }}
+                                                            className="member-row-hover-button"
+                                                        >
+                                                            X
+                                                        </button>
+                                                        {deletingUserId ===
+                                                            member.id && (
+                                                            <WarningPopup
+                                                                message={`Remove ${member.id.substring(0, 8)}...?`}
+                                                                complete={() => {
+                                                                    handleRemoveMember(
+                                                                        member.id,
+                                                                    );
+                                                                    setDeletingUserId(
+                                                                        null,
+                                                                    );
+                                                                }}
+                                                                close={() =>
+                                                                    setDeletingUserId(
+                                                                        null,
+                                                                    )
+                                                                }
+                                                            />
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    {/* --- INVITED TABLE (Always Visible) --- */}
+                                    <p
+                                        style={{
+                                            fontSize: isPhone
+                                                ? "4rem"
+                                                : "1.5rem",
+                                            color: "white",
+                                            marginTop: "40px",
+                                            marginBottom: "15px",
+                                            fontWeight: "bold",
+                                        }}
+                                    >
+                                        Invited
+                                    </p>
+                                    <table
+                                        id="d-griditem-membertable"
+                                        style={{
+                                            width: "100%",
+                                            borderCollapse: "collapse",
+                                        }}
+                                    >
+                                        <thead>
+                                            <tr
+                                                style={{
+                                                    borderBottom:
+                                                        "1px solid #444",
+                                                }}
+                                            >
+                                                <th
+                                                    style={{
+                                                        fontSize: isPhone
+                                                            ? "3rem"
+                                                            : "1rem",
+                                                        textAlign: "left",
+                                                        padding: "10px",
+                                                        color: "white",
+                                                    }}
+                                                >
+                                                    UUID
+                                                </th>
+                                                <th
+                                                    style={{
+                                                        fontSize: isPhone
+                                                            ? "3rem"
+                                                            : "1rem",
+                                                        textAlign: "center",
+                                                        padding: "10px",
+                                                        color: "white",
+                                                    }}
+                                                >
+                                                    Status
+                                                </th>
+                                                <th
+                                                    style={{
+                                                        width: isPhone
+                                                            ? "80px"
+                                                            : "50px",
+                                                    }}
+                                                ></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {invitedUsers.length > 0 ? (
+                                                invitedUsers.map(
+                                                    (invite, index) => {
+                                                        // Handle if the JSONB item is just a string or an object
+                                                        const displayId =
+                                                            typeof invite ===
+                                                            "string"
+                                                                ? invite
+                                                                : invite?.user_uuid ||
+                                                                  invite?.id ||
+                                                                  "Unknown";
+
+                                                        return (
+                                                            <tr
+                                                                key={index}
+                                                                style={{
+                                                                    height: isPhone
+                                                                        ? "12rem"
+                                                                        : "auto",
+                                                                    borderBottom:
+                                                                        "1px solid #222",
+                                                                }}
+                                                            >
+                                                                <td
+                                                                    style={{
+                                                                        fontSize:
+                                                                            isPhone
+                                                                                ? "2.5rem"
+                                                                                : "1rem",
+                                                                        color: "#aaa",
+                                                                        padding:
+                                                                            "10px",
+                                                                    }}
+                                                                >
+                                                                    {displayId !==
+                                                                    "Unknown"
+                                                                        ? `${displayId.substring(0, 8)}...`
+                                                                        : displayId}
+                                                                </td>
+                                                                <td
+                                                                    style={{
+                                                                        fontSize:
+                                                                            isPhone
+                                                                                ? "2.5rem"
+                                                                                : "1rem",
+                                                                        color: "#eab308",
+                                                                        textAlign:
+                                                                            "center",
+                                                                    }}
+                                                                >
+                                                                    Pending
+                                                                </td>
+                                                                <td
+                                                                    style={{
+                                                                        textAlign:
+                                                                            "center",
+                                                                    }}
+                                                                >
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            handleUninvite(
+                                                                                displayId,
+                                                                            )
+                                                                        }
+                                                                        style={{
+                                                                            background:
+                                                                                "none",
+                                                                            border: "none",
+                                                                            color: "#ff4d4d",
+                                                                            fontSize:
+                                                                                isPhone
+                                                                                    ? "4rem"
+                                                                                    : "1.5rem",
+                                                                            cursor: "pointer",
+                                                                        }}
+                                                                        className="member-row-hover-button"
+                                                                    >
+                                                                        X
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    },
+                                                )
+                                            ) : (
+                                                <tr>
+                                                    <td
+                                                        colSpan="3"
+                                                        style={{
+                                                            fontSize: isPhone
+                                                                ? "3rem"
+                                                                : "1rem",
+                                                            color: "#666",
+                                                            textAlign: "center",
+                                                            padding: "40px",
+                                                            fontStyle: "italic",
+                                                        }}
+                                                    >
+                                                        No pending invites
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* --- ACTION BUTTONS --- */}
+                                <div
+                                    className="d-griditem-membertable-bottombuttoncontainer"
+                                    style={{
+                                        display: "flex",
+                                        flexDirection: isPhone
+                                            ? "column"
+                                            : "row",
+                                        gap: isPhone ? "30px" : "15px",
+                                        width: "100%",
+                                        padding: isPhone ? "20px 0" : "10px 0",
+                                        marginTop: "10px",
+                                    }}
+                                >
+                                    <button
+                                        className="signupbutton"
+                                        onClick={() =>
+                                            setIsInvitePopupOpen(true)
+                                        }
+                                        style={{
+                                            fontSize: isPhone ? "4rem" : "1rem",
+                                            height: isPhone ? "12rem" : "50px",
+                                            flex: 1,
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        Invite
+                                    </button>
+                                    <button
+                                        className="signupbutton"
+                                        onClick={() =>
+                                            setIsUpdatingAdmins(true)
+                                        }
+                                        style={{
+                                            fontSize: isPhone ? "4rem" : "1rem",
+                                            height: isPhone ? "12rem" : "50px",
+                                            flex: 1,
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        Update
+                                    </button>
+                                </div>
+
+                                {isUpdatingAdmins && (
+                                    <WarningPopup
+                                        message="Update group permissions?"
+                                        complete={() => {
+                                            saveMemberUpdates();
+                                            setIsUpdatingAdmins(false);
+                                        }}
+                                        close={() => setIsUpdatingAdmins(false)}
+                                    />
+                                )}
+                                <div
+                                    className="d-memberlist-idcard-container"
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        padding: isPhone ? "30px" : "15px 20px",
+                                        backgroundColor:
+                                            "rgba(255, 255, 255, 0.03)",
+                                        borderRadius: "12px",
+                                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                                        marginTop: "20px",
+                                        width: "100%",
+                                        boxSizing: "border-box",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            gap: "4px",
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: isPhone
+                                                    ? "3rem"
+                                                    : "0.75rem",
+                                                color: "#666",
+                                                fontWeight: "bold",
+                                                textTransform: "uppercase",
+                                            }}
+                                        >
+                                            Group ID
+                                        </span>
+                                        <code
+                                            style={{
+                                                fontSize: isPhone
+                                                    ? "4rem"
+                                                    : "1.2rem",
+                                                color: "#ffffff", // Changed from teal to white
+                                                fontFamily: "monospace",
+                                            }}
+                                        >
+                                            {groupId || "—"}
+                                        </code>
+                                    </div>
+
+                                    {/* The copy icon now changes based on the 'copied' state */}
+                                    {copied ? (
+                                        <MdCheck
+                                            className="d-memberlist-idcard-copy-icon"
+                                            size={isPhone ? "4rem" : "1.5rem"}
+                                            style={{
+                                                color: "#4caf50",
+                                                cursor: "default",
+                                            }} // Green check for feedback
+                                        />
+                                    ) : (
+                                        <MdContentCopy
+                                            className="d-memberlist-idcard-copy-icon"
+                                            size={isPhone ? "4rem" : "1.5rem"}
+                                            style={{
+                                                color: "#ffffff",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={handleCopy}
+                                        />
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    height: "300px",
+                                    width: "100%",
+                                }}
+                            >
+                                <p
+                                    style={{
+                                        fontSize: isPhone ? "4rem" : "1.2rem",
+                                        color: "#888",
+                                        fontStyle: "italic",
+                                    }}
+                                >
+                                    Nothing to see here...
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="d-griditem-2r" style={{ gridColumn: 2 }}>
@@ -282,19 +990,25 @@ function HomePageDesktop({ handleLowStockClick }) {
                                     textAlign: "center",
                                 }}
                             >
-                                Inventory is weighted toward{" "}
-                                <span
-                                    style={{
-                                        color:
-                                            tagColorMap[mostUsedTag] ||
-                                            "#a78bfa",
-                                        fontWeight: "600",
-                                    }}
-                                >
-                                    {mostUsedTag}
-                                </span>{" "}
-                                components across {chartData.length} active
-                                categories.
+                                {totalQuantity !== 0 ? (
+                                    <>
+                                        Inventory is weighted toward{" "}
+                                        <span
+                                            style={{
+                                                color:
+                                                    tagColorMap[mostUsedTag] ||
+                                                    "#a78bfa",
+                                                fontWeight: "600",
+                                            }}
+                                        >
+                                            {mostUsedTag}
+                                        </span>{" "}
+                                        components across {chartData.length}{" "}
+                                        active tags.
+                                    </>
+                                ) : (
+                                    "You currently have 0 items."
+                                )}
                             </p>
                         </div>
 
@@ -317,6 +1031,7 @@ function HomePageDesktop({ handleLowStockClick }) {
                                         <div
                                             key={i}
                                             className="d-homedash-part-critical-item"
+                                            style={{ cursor: "pointer" }}
                                             onClick={() =>
                                                 handleLowStockClick(part)
                                             }
@@ -486,16 +1201,32 @@ function HomePageDesktop({ handleLowStockClick }) {
                                 {sortedBatteriesByChargingTime.length > 0 ? (
                                     sortedBatteriesByChargingTime.map(
                                         (battery, i) => {
-                                            const elapsedMs =
-                                                currentTime - battery.toc;
-                                            const elapsedMins = Math.max(
-                                                0,
-                                                Math.floor(elapsedMs / 60000),
-                                            );
-                                            const displayTime =
-                                                elapsedMins >= 60
-                                                    ? `${Math.floor(elapsedMins / 60)}h ${elapsedMins % 60}m`
-                                                    : `${elapsedMins}m`;
+                                            const ratePerHour =
+                                                ((battery.chargerSpeed || 2) /
+                                                    (battery.capacity || 3)) *
+                                                100;
+
+                                            let displayTime;
+
+                                            if (battery.currentLevel >= 100) {
+                                                displayTime = "Fully Charged";
+                                            } else if (!ratePerHour) {
+                                                displayTime = "—";
+                                            } else {
+                                                const remainingPercent =
+                                                    100 - battery.currentLevel;
+
+                                                const remainingMins = Math.ceil(
+                                                    (remainingPercent /
+                                                        ratePerHour) *
+                                                        60,
+                                                );
+
+                                                displayTime =
+                                                    remainingMins >= 60
+                                                        ? `${Math.floor(remainingMins / 60)}h ${remainingMins % 60}m`
+                                                        : `${remainingMins}m`;
+                                            }
 
                                             let statusColor = "#f97316";
                                             if (battery.currentLevel >= 90)
@@ -503,7 +1234,8 @@ function HomePageDesktop({ handleLowStockClick }) {
                                             else if (battery.currentLevel >= 75)
                                                 statusColor = "#10b981";
                                             else if (battery.currentLevel <= 20)
-                                                statusColor = "#7c0000";
+                                                statusColor =
+                                                    "rgb(239, 68, 68)";
 
                                             return (
                                                 <div
@@ -521,6 +1253,7 @@ function HomePageDesktop({ handleLowStockClick }) {
                                                             "all 0.3s ease",
                                                         cursor: "pointer",
                                                     }}
+                                                    onClick={handleBatteryClick}
                                                 >
                                                     {/* INDIVIDUAL SIDEBAR ACCENT */}
                                                     <div
@@ -628,7 +1361,7 @@ function HomePageDesktop({ handleLowStockClick }) {
                                                                             "uppercase",
                                                                     }}
                                                                 >
-                                                                    Elapsed
+                                                                    ETA
                                                                 </span>
                                                             </div>
                                                         </div>

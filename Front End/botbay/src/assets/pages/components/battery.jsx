@@ -36,7 +36,7 @@ function BatteryList({ table, onUpdate, onDelete }) {
         if (!item.mcStatus) return "#64748b";
         if (level >= 90) return "#3b82f6";
         if (level >= 75) return "#10b981";
-        if (level <= 20) return "#7c0000";
+        if (level <= 20) return "rgb(239, 68, 68)";
         return "#f97316";
     };
 
@@ -132,10 +132,17 @@ function BatteryList({ table, onUpdate, onDelete }) {
                         padding: 20px;
                         gap: 25px;
                     }
+
+                    .phone-d-battery-notice-text{
+                        font-size: 3rem
+                    }
                 }
             `}</style>
 
-            <p style={{ color: "#94a3b8", marginBottom: "20px" }}>
+            <p
+                className="phone-d-battery-notice-text"
+                style={{ color: "#94a3b8", marginBottom: "20px" }}
+            >
                 This battery charge tracker is to only be used as a reference,
                 it is NOT 100% accurate
             </p>
@@ -238,9 +245,98 @@ function BatteryList({ table, onUpdate, onDelete }) {
                                                                     )
                                                                 }
                                                             />
-                                                            <span className="d-exact-val">
-                                                                {exactValue}%
-                                                            </span>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                max="100"
+                                                                value={
+                                                                    exactValue
+                                                                }
+                                                                onKeyDown={(
+                                                                    e,
+                                                                ) => {
+                                                                    if (
+                                                                        e.key ===
+                                                                        "Enter"
+                                                                    )
+                                                                        e.target.blur();
+                                                                }}
+                                                                onChange={(
+                                                                    e,
+                                                                ) => {
+                                                                    let val =
+                                                                        parseInt(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        );
+                                                                    if (
+                                                                        isNaN(
+                                                                            val,
+                                                                        )
+                                                                    )
+                                                                        val = 0;
+                                                                    if (
+                                                                        val >
+                                                                        100
+                                                                    )
+                                                                        val = 100;
+                                                                    if (val < 0)
+                                                                        val = 0;
+                                                                    setExactValue(
+                                                                        val,
+                                                                    );
+                                                                }}
+                                                                onFocus={(
+                                                                    e,
+                                                                ) => {
+                                                                    e.target.style.borderColor =
+                                                                        "#8b5cf6";
+                                                                    e.target.style.backgroundColor =
+                                                                        "rgba(30, 32, 48, 0.8)";
+                                                                    e.target.style.boxShadow =
+                                                                        "0 0 0 3px rgba(139, 92, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.3)";
+                                                                }}
+                                                                onBlur={(e) => {
+                                                                    e.target.style.borderColor =
+                                                                        "rgba(255, 255, 255, 0.1)";
+                                                                    e.target.style.backgroundColor =
+                                                                        "rgba(15, 17, 26, 0.6)";
+                                                                    e.target.style.boxShadow =
+                                                                        "inset 0 2px 4px rgba(0, 0, 0, 0.3)";
+                                                                }}
+                                                                style={{
+                                                                    width: "75px",
+                                                                    height: "40px",
+                                                                    padding:
+                                                                        "0 8px",
+                                                                    color: "#ffffff",
+                                                                    fontSize:
+                                                                        "1.1rem",
+                                                                    fontWeight:
+                                                                        "700",
+                                                                    fontFamily:
+                                                                        "'JetBrains Mono', 'Consolas', monospace",
+                                                                    textAlign:
+                                                                        "center",
+                                                                    backgroundColor:
+                                                                        "rgba(15, 17, 26, 0.6)",
+                                                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                                                    borderRadius:
+                                                                        "8px",
+                                                                    boxShadow:
+                                                                        "inset 0 2px 4px rgba(0, 0, 0, 0.3)",
+                                                                    outline:
+                                                                        "none",
+                                                                    transition:
+                                                                        "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                                    appearance:
+                                                                        "none",
+                                                                    WebkitAppearance:
+                                                                        "none",
+                                                                    margin: "0",
+                                                                }}
+                                                            />
                                                             <IoCheckmarkCircle
                                                                 className="d-confirm-icon"
                                                                 onClick={() =>
@@ -404,7 +500,10 @@ function BatteryList({ table, onUpdate, onDelete }) {
                                             {item.type === "dh" ? (
                                                 <div
                                                     className="d-slider-box"
-                                                    style={{ width: "100%" }}
+                                                    style={{
+                                                        width: "100%",
+                                                        padding: "10px 0",
+                                                    }}
                                                 >
                                                     <input
                                                         type="range"
@@ -419,25 +518,97 @@ function BatteryList({ table, onUpdate, onDelete }) {
                                                                 ),
                                                             )
                                                         }
+                                                        style={{
+                                                            width: "100%",
+                                                            height: "30px", // bigger touch target
+                                                            marginBottom:
+                                                                "10px",
+                                                        }}
                                                     />
                                                     <div
                                                         style={{
                                                             display: "flex",
                                                             justifyContent:
                                                                 "space-between",
-                                                            width: "100%",
                                                             alignItems:
                                                                 "center",
-                                                            marginTop: "10px",
                                                         }}
                                                     >
-                                                        <span className="d-exact-val">
-                                                            {exactValue}%
-                                                        </span>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            max="100"
+                                                            value={exactValue}
+                                                            onKeyDown={(e) => {
+                                                                if (
+                                                                    e.key ===
+                                                                    "Enter"
+                                                                )
+                                                                    e.target.blur();
+                                                            }}
+                                                            onChange={(e) => {
+                                                                let val =
+                                                                    parseInt(
+                                                                        e.target
+                                                                            .value,
+                                                                    );
+                                                                if (isNaN(val))
+                                                                    val = 0;
+                                                                if (val > 100)
+                                                                    val = 100;
+                                                                if (val < 0)
+                                                                    val = 0;
+                                                                setExactValue(
+                                                                    val,
+                                                                );
+                                                            }}
+                                                            style={{
+                                                                width: "70px",
+                                                                height: "40px",
+                                                                fontSize:
+                                                                    "3rem",
+                                                                fontWeight:
+                                                                    "700",
+                                                                fontFamily:
+                                                                    "'JetBrains Mono', monospace",
+                                                                textAlign:
+                                                                    "center",
+                                                                backgroundColor:
+                                                                    "rgba(15, 17, 26, 0.6)",
+                                                                color: "#f8fafc",
+                                                                border: "1px solid rgba(255, 255, 255, 0.1)",
+                                                                borderRadius:
+                                                                    "8px",
+                                                                outline: "none",
+                                                                boxShadow:
+                                                                    "inset 0 2px 4px rgba(0, 0, 0, 0.3)",
+                                                                transition:
+                                                                    "border-color 0.2s ease, box-shadow 0.2s ease",
+                                                                appearance:
+                                                                    "none",
+                                                                WebkitAppearance:
+                                                                    "none",
+                                                                margin: "0",
+                                                            }}
+                                                            onFocus={(e) => {
+                                                                e.target.style.borderColor =
+                                                                    "#8b5cf6";
+                                                                e.target.style.boxShadow =
+                                                                    "0 0 0 3px rgba(139, 92, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.3)";
+                                                            }}
+                                                            onBlur={(e) => {
+                                                                e.target.style.borderColor =
+                                                                    "rgba(255, 255, 255, 0.1)";
+                                                                e.target.style.boxShadow =
+                                                                    "inset 0 2px 4px rgba(0, 0, 0, 0.3)";
+                                                            }}
+                                                        />
                                                         <IoCheckmarkCircle
                                                             className="d-confirm-icon"
                                                             style={{
                                                                 color: "#47d5a6",
+                                                                fontSize:
+                                                                    "28px",
                                                             }}
                                                             onClick={() =>
                                                                 handleConfirm(

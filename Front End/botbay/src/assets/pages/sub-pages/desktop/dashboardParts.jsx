@@ -35,6 +35,16 @@ import { megaSchema } from "../editListUtils";
 import { AddItemMenuDesktop } from "../../components/addItem";
 import { useMargin } from "recharts";
 
+import { isUserSignedIn } from "../../../scripts/auth";
+
+import {
+    overwriteQuant,
+    readPart,
+    overwritePart,
+    deleteTagCloud,
+    createTag,
+} from "../../../scripts/database";
+
 function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
     const [isPhone, setIsPhone] = useState(window.innerWidth < 1200);
 
@@ -208,8 +218,8 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                 Store: formData.storeLink || "",
             },
 
-            quantity: currentItem.quantity ?? 0,
-            needed: currentItem.needed ?? 0,
+            quantity: currentItem?.quantity ?? 0,
+            needed: currentItem?.needed ?? 0,
             editable: true,
         };
 
@@ -218,7 +228,12 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
             part.id === formData.id ? updatedPart : part,
         );
 
-        localStorage.setItem("partData", JSON.stringify(updatedPartsList));
+        if (isUserSignedIn()) {
+            overwritePart(updatedPart);
+            localStorage.setItem("partData", JSON.stringify(updatedPartsList));
+        } else {
+            localStorage.setItem("partData", JSON.stringify(updatedPartsList));
+        }
         handleEditClose();
     };
 
@@ -263,12 +278,13 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
         // other: 7,
         // wheel: 8,
 
-        switch (currentItem.stats.type) {
+        switch (currentItem?.stats.type) {
             case "motor":
                 return (
                     <MotorStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
 
@@ -277,6 +293,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     <ServoStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
 
@@ -285,6 +302,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     <StructuralStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
 
@@ -293,6 +311,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     <ElectricalStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
 
@@ -301,14 +320,16 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     <SensorStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
 
-            case "3d-print":
+            case "3d-printed":
                 return (
                     <ThreeDPrintedStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
 
@@ -317,6 +338,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     <MachinedStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
 
@@ -325,15 +347,28 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     <OtherStatList
                         handleChange={handleChange}
                         formData={formData}
+                        isPhone={isPhone}
                     />
                 );
         }
     }
 
-    function handleEditOpen(item) {
+    async function handleEditOpen(originalItem) {
+        let item = originalItem;
+
+        // 1. If signed in, fetch the freshest data from the cloud
+        if (isUserSignedIn()) {
+            const cloudData = await readPart(originalItem.id);
+            if (cloudData) {
+                item = cloudData;
+            }
+        }
+
+        // 2. Open overlays and handle exit logic
         setIsEditPartOpen(true);
         onExitClick();
 
+        // 3. Map the type to the UI index
         const partTypeMap = {
             motor: 0,
             servo: 1,
@@ -346,7 +381,6 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
             wheel: 8,
         };
 
-        // 1. Set the index for your UI tabs/selection
         const type = item.type || item.stats?.type || "other";
         setPartType(partTypeMap[type]);
 
@@ -476,12 +510,23 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
 
     // Load parts from localStorage
     useEffect(() => {
-        const savedData = localStorage.getItem("partData");
-        if (savedData) {
-            setListResults(JSON.parse(savedData));
-        } else {
-            setListResults([]);
-        }
+        const loadData = () => {
+            const savedData = localStorage.getItem("partData");
+            if (savedData) {
+                setListResults(JSON.parse(savedData));
+            } else {
+                setListResults([]);
+            }
+        };
+
+        // 1. Run once on mount
+        loadData();
+
+        // 2. Listen for the custom "storage" event from createNewItem
+        window.addEventListener("storage", loadData);
+
+        // 3. Cleanup to prevent memory leaks
+        return () => window.removeEventListener("storage", loadData);
     }, []);
 
     // Load tags from localStorage
@@ -496,25 +541,34 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
     }, []);
 
     // Add new tag
-    const addTag = (tagName, color) => {
+    const addTag = async (tagName, color) => {
         const newTag = { name: tagName, color, deletable: true };
+
+        // 1. Cloud Sync (if signed in)
+        if (isUserSignedIn()) {
+            const result = await createTag(newTag);
+            if (!result.success) {
+                alert("Failed to save tag to cloud. Please try again.");
+                return;
+            }
+        }
+
+        // 2. Update React State & LocalStorage
         setTags((prevTags) => {
             const updatedTags = [...prevTags, newTag];
             localStorage.setItem("taglist", JSON.stringify(updatedTags));
             return updatedTags;
         });
+
         onTagExitClick();
     };
 
-    const deleteTag = (tagName) => {
-        // 1. Get the freshest data directly from Storage to avoid state-sync issues
+    const deleteTag = async (tagName) => {
+        // 1. Prepare local updates
         const rawParts = JSON.parse(localStorage.getItem("partData") || "[]");
         const rawTags = JSON.parse(localStorage.getItem("taglist") || "[]");
 
-        // 2. Filter out the tag from the Master Tag List
         const updatedTagList = rawTags.filter((tag) => tag.name !== tagName);
-
-        // 3. Scrub the tag from every single part's tag array
         const updatedParts = rawParts.map((part) => {
             if (part.tags && Array.isArray(part.tags)) {
                 return {
@@ -525,18 +579,22 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
             return part;
         });
 
-        // 4. Update LocalStorage (The Source of Truth)
+        // 2. Cloud Sync
+        if (isUserSignedIn()) {
+            const result = await deleteTagCloud(tagName);
+            if (!result.success) {
+                console.error("Cloud sync failed. Deletion aborted.");
+                return;
+            }
+        }
+
+        // 3. Commit changes to UI and Storage
         localStorage.setItem("taglist", JSON.stringify(updatedTagList));
         localStorage.setItem("partData", JSON.stringify(updatedParts));
 
-        // 5. Update React State (The UI)
         setTags(updatedTagList);
         setListResults(updatedParts);
-
-        // 6. Remove from active filters if it was selected
         setSelectedTags((prev) => prev.filter((t) => t !== tagName));
-
-        // 7. UI Cleanup
         setDeletingTagName(null);
     };
 
@@ -581,7 +639,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
     const [partType, setPartType] = React.useState(0);
 
     const renderStatContent = () => {
-        switch (currentItem.stats.type) {
+        switch (currentItem?.stats.type) {
             case "motor":
                 return <MotorList part={currentItem} />;
             case "servo":
@@ -671,15 +729,46 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
 
         setPartType(partTypeMap[item.stats.type]);
 
-        setCurrentItem(item);
-        setIsPartOverlayOpen(true);
-        setCurrentQuant(item?.quantity);
-        setCurrentNeeded(item?.needed);
+        if (isUserSignedIn()) {
+            readPart(item.id).then((data) => {
+                setCurrentItem(data);
+                setIsPartOverlayOpen(true);
+                setCurrentQuant(data?.quantity);
+                setCurrentNeeded(data?.needed);
+                setPreviousNeeded(item?.needed);
+                setPreviousQuant(item?.quantity);
+            });
+        } else {
+            setCurrentItem(item);
+            setIsPartOverlayOpen(true);
+            setCurrentQuant(item?.quantity);
+            setCurrentNeeded(item?.needed);
+            setPreviousNeeded(item?.needed);
+            setPreviousQuant(item?.quantity);
+        }
     };
 
     const onExitClick = () => {
         setIsPartOverlayOpen(false);
-        setCurrentItem(null);
+
+        if (isUserSignedIn()) {
+            console.log("User signed in on exit click");
+            if (
+                currentQuant != previousQuant ||
+                currentNeeded != previousNeeded
+            ) {
+                console.log("Changing quant, user signed in");
+                overwriteQuant(currentItem?.id, currentQuant, currentNeeded);
+            }
+            setCurrentItem(null);
+            setPreviousNeeded(0);
+            setPreviousQuant(0);
+        } else {
+            console.log("Local change, user not signed in");
+            setCurrentItem(null);
+            setPreviousNeeded(0);
+            setPreviousQuant(0);
+        }
 
         const savedData = localStorage.getItem("partData");
         setListResults(savedData ? JSON.parse(savedData) : []);
@@ -704,10 +793,10 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
         if (value > -1) {
             if (target === 0) {
                 setCurrentQuant(value);
-                updatePartData(currentItem.id, value, currentNeeded);
+                updatePartData(currentItem?.id, value, currentNeeded);
             } else {
                 setCurrentNeeded(value);
-                updatePartData(currentItem.id, currentQuant, value);
+                updatePartData(currentItem?.id, currentQuant, value);
             }
         }
     };
@@ -720,7 +809,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     : Math.max(currentQuant - 1, 0);
 
             setCurrentQuant(newQuant);
-            updatePartData(currentItem.id, newQuant, currentNeeded);
+            updatePartData(currentItem?.id, newQuant, currentNeeded);
         } else {
             const newNeeded =
                 operation === 0
@@ -728,7 +817,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     : Math.max(currentNeeded - 1, 0);
 
             setCurrentNeeded(newNeeded);
-            updatePartData(currentItem.id, currentQuant, newNeeded);
+            updatePartData(currentItem?.id, currentQuant, newNeeded);
         }
     };
     const updatePartData = (id, newQuant, newNeeded) => {
@@ -807,6 +896,9 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
             onRowClick(partToRun);
         }
     }, []);
+
+    const [previousNeeded, setPreviousNeeded] = useState(0);
+    const [previousQuant, setPreviousQuant] = useState(0);
 
     return (
         <>
@@ -977,73 +1069,81 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                     </div>
 
                     <div className="d-partslistwrapper" id="partslistwrapper">
-                        {!isPhone && (
-                            <div className="d-partslistheader">
-                                <div
+                        <div className="d-partslistheader">
+                            <div
+                                style={{
+                                    width: "25%",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <span
                                     style={{
-                                        width: "15%",
-                                        display: "flex",
-                                        justifyContent: "center",
+                                        cursor: "pointer",
+                                        ...(isPhone && { fontSize: "3rem" }),
                                     }}
+                                    onClick={() =>
+                                        reloadPartsList("manufacturerId")
+                                    }
                                 >
-                                    <span
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() =>
-                                            reloadPartsList("manufacturerId")
-                                        }
-                                    >
-                                        Id {getSortIcon("manufacturerId")}
-                                    </span>
-                                </div>
+                                    Id {getSortIcon("manufacturerId")}
+                                </span>
+                            </div>
 
-                                <div
+                            <div
+                                style={{
+                                    width: "25%",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <span
                                     style={{
-                                        width: "50%",
-                                        display: "flex",
-                                        justifyContent: "center",
+                                        cursor: "pointer",
+                                        ...(isPhone && { fontSize: "3rem" }),
                                     }}
+                                    onClick={() => reloadPartsList("name")}
                                 >
-                                    <span
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => reloadPartsList("name")}
-                                    >
-                                        Name {getSortIcon("name")}
-                                    </span>
-                                </div>
+                                    Name {getSortIcon("name")}
+                                </span>
+                            </div>
 
-                                <div
+                            <div
+                                style={{
+                                    width: "25%",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <span
                                     style={{
-                                        width: "15%",
-                                        display: "flex",
-                                        justifyContent: "center",
+                                        cursor: "pointer",
+                                        ...(isPhone && { fontSize: "3rem" }),
                                     }}
+                                    onClick={() => reloadPartsList("quantity")}
                                 >
-                                    <span
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() =>
-                                            reloadPartsList("quantity")
-                                        }
-                                    >
-                                        Quantity {getSortIcon("quantity")}
-                                    </span>
-                                </div>
+                                    Quantity {getSortIcon("quantity")}
+                                </span>
+                            </div>
 
-                                <div
+                            <div
+                                style={{
+                                    width: "25%",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <span
                                     style={{
-                                        width: "15%",
-                                        display: "flex",
-                                        justifyContent: "center",
+                                        cursor: "pointer",
+                                        ...(isPhone && { fontSize: "3rem" }),
                                     }}
+                                    onClick={() => reloadPartsList("needed")}
                                 >
-                                    <span
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() =>
-                                            reloadPartsList("needed")
-                                        }
-                                    >
-                                        Needed {getSortIcon("needed")}
-                                    </span>
-                                </div>
+                                    Needed {getSortIcon("needed")}
+                                </span>
+                            </div>
+                            {!isPhone && (
                                 <div
                                     style={{
                                         width: "10%",
@@ -1139,8 +1239,8 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                         )}
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {filteredResults.map((item) => (
                             <PartItem
@@ -1173,7 +1273,14 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                         </button>
                     )}
                     <div className="leftcontainer">
-                        <div className="thirdcontainer">
+                        <div
+                            className="thirdcontainer"
+                            style={{
+                                justifyContent: "flex-start",
+                                paddingTop: "3vw",
+                                marginBottom: "20px",
+                            }}
+                        >
                             <div
                                 className="d-titlecontainer"
                                 style={{ paddingLeft: "5%", fontSize: "2rem" }}
@@ -1181,10 +1288,10 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                 <p>{currentItem?.name}</p>
                             </div>
                             <p className="d-partoverlay-subtitle">
-                                ID: {currentItem.manufacturerId}
+                                ID: {currentItem?.manufacturerId}
                             </p>
                             <p className="d-partoverlay-subtitle">
-                                Manufacturer: {currentItem.manufacturer}
+                                Manufacturer: {currentItem?.manufacturer}
                             </p>
                             <img
                                 src={currentItem?.icon}
@@ -1194,7 +1301,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                 <p>Links:</p>
                                 <ul>
                                     {currentItem?.links &&
-                                        Object.entries(currentItem.links)
+                                        Object.entries(currentItem?.links)
                                             .filter(([name, url]) => url)
                                             .map(([name, url]) => (
                                                 <li key={name}>
@@ -1211,7 +1318,14 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                             </div>
                         </div>
 
-                        <div className="thirdcontainer">
+                        <div
+                            className="thirdcontainer"
+                            style={{
+                                justifyContent: "flex-start",
+                                paddingTop: "3vw",
+                                marginBottom: "20px",
+                            }}
+                        >
                             <div className="d-partoverlay-infodiv1">
                                 <p>Stats:</p>
                                 {renderStatContent()}
@@ -1229,6 +1343,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                             </button>
                                             {isEditingQuant ? (
                                                 <input
+                                                    max={99999}
                                                     type="number"
                                                     autoFocus
                                                     className="d-parts-directinput"
@@ -1279,6 +1394,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                             </button>
                                             {isEditingNeeded ? (
                                                 <input
+                                                    max={99999}
                                                     type="number"
                                                     autoFocus
                                                     className="d-parts-directinput"
@@ -1323,7 +1439,14 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                             </div>
                         </div>
 
-                        <div className="thirdcontainer">
+                        <div
+                            className="thirdcontainer"
+                            style={{
+                                justifyContent: "flex-start",
+                                paddingTop: "3vw",
+                                marginBottom: "20px",
+                            }}
+                        >
                             <div className="d-partoverlay-infodiv1">
                                 <p>Tags:</p>
                                 <div
@@ -1402,24 +1525,51 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                             {tagError}
                         </p>
                     )}
-                    <input
-                        id="createtaginput"
-                        placeholder="Tag Name..."
-                        value={newTagName}
-                        onChange={(e) => {
-                            setNewTagName(e.target.value);
-                            setTagError("");
-                        }}
-                        style={{
-                            border: tagError
-                                ? "1px solid red"
-                                : "1px solid #ccc",
-                            padding: "6px 10px",
-                            borderRadius: "4px",
-                            width: "100%",
-                            boxSizing: "border-box",
-                        }}
-                    />
+                    <div style={{ width: "100%" }}>
+                        <div style={{ position: "relative", width: "100%" }}>
+                            <input
+                                id="createtaginput"
+                                placeholder="Tag Name..."
+                                value={newTagName}
+                                onChange={(e) => {
+                                    setNewTagName(e.target.value.slice(0, 25));
+                                    setTagError("");
+                                }}
+                                style={{
+                                    border: "1px solid #ccc",
+                                    padding: "6px 10px",
+                                    borderRadius: "4px",
+                                    width: "100%",
+                                    boxSizing: "border-box",
+                                    outline: "none",
+                                    fontSize: "14px",
+                                    paddingRight:
+                                        (formData?.storeLink?.length || 0) >=
+                                        230
+                                            ? isPhone
+                                                ? "100px"
+                                                : "45px"
+                                            : "10px",
+                                }}
+                            />
+                            {newTagName.length >= 20 && (
+                                <p
+                                    style={{
+                                        position: "absolute",
+                                        right: "5px",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        margin: 0,
+                                        fontSize: "14px",
+                                        color: "#ef4444",
+                                        pointerEvents: "none",
+                                    }}
+                                >
+                                    {25 - newTagName.length}
+                                </p>
+                            )}
+                        </div>
+                    </div>
                     <div className="d-custom-sketch-container">
                         <Sketch
                             color={hex}
@@ -1584,8 +1734,8 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                 className="d-createitem-form"
                             >
                                 <h3 className="d-createitem-form-subtitle">
-                                    ({currentItem.manufacturerId}) -{" "}
-                                    {currentItem.name}
+                                    ({currentItem?.manufacturerId}) -{" "}
+                                    {currentItem?.name}
                                 </h3>
 
                                 <hr className="d-createitem-form-divider"></hr>
@@ -1595,32 +1745,177 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
 
                                 <div className="d-createitem-input-group">
                                     <label>Name:</label>
-                                    <input
-                                        name="name"
-                                        placeholder="e.g. NeveRest Orbital 20"
-                                        value={formData?.name}
-                                        onChange={handleChange}
-                                    />
+                                    <div
+                                        style={{
+                                            position: "relative",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <input
+                                            name="name"
+                                            placeholder="e.g. NeveRest Orbital 20"
+                                            value={formData?.name || ""}
+                                            onChange={(e) => {
+                                                const val =
+                                                    e.target.value.slice(0, 40);
+                                                handleChange({
+                                                    target: {
+                                                        name: "name",
+                                                        value: val,
+                                                    },
+                                                });
+                                            }}
+                                            style={{
+                                                width: "100%",
+                                                boxSizing: "border-box",
+                                                paddingRight:
+                                                    (formData?.storeLink
+                                                        ?.length || 0) >= 230
+                                                        ? isPhone
+                                                            ? "100px"
+                                                            : "45px"
+                                                        : "10px",
+                                            }}
+                                        />
+                                        {(formData?.name?.length || 0) >=
+                                            35 && (
+                                            <p
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform:
+                                                        "translateY(-50%)",
+                                                    margin: 0,
+                                                    fontSize: isPhone
+                                                        ? "2.5rem"
+                                                        : "0.8rem",
+                                                    color: "#ef4444",
+                                                    pointerEvents: "none",
+                                                }}
+                                            >
+                                                {40 -
+                                                    (formData?.name?.length ||
+                                                        0)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="d-createitem-input-group">
                                     <label>Manufacturer ID:</label>
-                                    <input
-                                        name="manufacturerId"
-                                        placeholder="e.g. am-3637b"
-                                        value={formData?.manufacturerId}
-                                        onChange={handleChange}
-                                    />
+                                    <div
+                                        style={{
+                                            position: "relative",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <input
+                                            name="manufacturerId"
+                                            placeholder="e.g. am-3637b"
+                                            value={
+                                                formData?.manufacturerId || ""
+                                            }
+                                            onChange={(e) => {
+                                                const val =
+                                                    e.target.value.slice(0, 40);
+                                                handleChange({
+                                                    target: {
+                                                        name: "manufacturerId",
+                                                        value: val,
+                                                    },
+                                                });
+                                            }}
+                                            style={{
+                                                paddingRight:
+                                                    (formData?.storeLink
+                                                        ?.length || 0) >= 230
+                                                        ? isPhone
+                                                            ? "100px"
+                                                            : "45px"
+                                                        : "10px",
+                                            }}
+                                        />
+                                        {(formData?.manufacturerId?.length ||
+                                            0) >= 35 && (
+                                            <p
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform:
+                                                        "translateY(-50%)",
+                                                    margin: 0,
+                                                    fontSize: isPhone
+                                                        ? "2.5rem"
+                                                        : "0.8rem",
+                                                    color: "#ef4444",
+                                                    pointerEvents: "none",
+                                                }}
+                                            >
+                                                {40 -
+                                                    (formData?.manufacturerId
+                                                        ?.length || 0)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="d-createitem-input-group">
                                     <label>Manufacturer:</label>
-                                    <input
-                                        name="manufacturer"
-                                        placeholder="e.g. Andymark"
-                                        value={formData?.manufacturer}
-                                        onChange={handleChange}
-                                    />
+                                    <div
+                                        style={{
+                                            position: "relative",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <input
+                                            name="manufacturer"
+                                            placeholder="e.g. Andymark"
+                                            value={formData?.manufacturer || ""}
+                                            onChange={(e) => {
+                                                const val =
+                                                    e.target.value.slice(0, 40);
+                                                handleChange({
+                                                    target: {
+                                                        name: "manufacturer",
+                                                        value: val,
+                                                    },
+                                                });
+                                            }}
+                                            style={{
+                                                paddingRight:
+                                                    (formData?.storeLink
+                                                        ?.length || 0) >= 230
+                                                        ? isPhone
+                                                            ? "100px"
+                                                            : "45px"
+                                                        : "10px",
+                                            }}
+                                        />
+                                        {(formData?.manufacturer?.length ||
+                                            0) >= 35 && (
+                                            <p
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform:
+                                                        "translateY(-50%)",
+                                                    margin: 0,
+                                                    fontSize: isPhone
+                                                        ? "2.5rem"
+                                                        : "0.8rem",
+                                                    color: "#ef4444",
+                                                    pointerEvents: "none",
+                                                }}
+                                            >
+                                                {40 -
+                                                    (formData?.manufacturer
+                                                        ?.length || 0)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="d-createitem-input-group">
@@ -1633,7 +1928,9 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                             marginTop: "10px",
                                         }}
                                     >
-                                        {availableTags.map((tag) => {
+                                        {JSON.parse(
+                                            localStorage.getItem("taglist"),
+                                        ).map((tag) => {
                                             const isSelected =
                                                 formData?.tags?.includes(
                                                     tag.name,
@@ -1688,38 +1985,173 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
 
                                 <div className="d-createitem-input-group">
                                     <label>Icon URL:</label>
-                                    <input
-                                        name="iconLink"
-                                        value={formData.iconLink}
-                                        onChange={handleChange}
-                                    />
+                                    <div
+                                        style={{
+                                            position: "relative",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <input
+                                            name="iconLink"
+                                            value={formData.iconLink || ""}
+                                            onChange={(e) => {
+                                                const val =
+                                                    e.target.value.slice(
+                                                        0,
+                                                        250,
+                                                    );
+                                                handleChange({
+                                                    target: {
+                                                        name: "iconLink",
+                                                        value: val,
+                                                    },
+                                                });
+                                            }}
+                                            style={{
+                                                paddingRight:
+                                                    (formData?.storeLink
+                                                        ?.length || 0) >= 230
+                                                        ? isPhone
+                                                            ? "100px"
+                                                            : "45px"
+                                                        : "10px",
+                                            }}
+                                        />
+                                        {(formData?.iconLink?.length || 0) >=
+                                            230 && (
+                                            <p
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform:
+                                                        "translateY(-50%)",
+                                                    margin: 0,
+                                                    fontSize: isPhone
+                                                        ? "2.5rem"
+                                                        : "0.8rem",
+                                                    color: "#ef4444",
+                                                    pointerEvents: "none",
+                                                }}
+                                            >
+                                                {250 -
+                                                    (formData?.iconLink
+                                                        ?.length || 0)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="d-createitem-input-group">
                                     <label>CAD Link:</label>
-                                    <input
-                                        name="cadLink"
-                                        value={formData.cadLink}
-                                        onChange={handleChange}
-                                    />
+                                    <div
+                                        style={{
+                                            position: "relative",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <input
+                                            name="cadLink"
+                                            value={formData.cadLink || ""}
+                                            onChange={(e) => {
+                                                const val =
+                                                    e.target.value.slice(
+                                                        0,
+                                                        250,
+                                                    );
+                                                handleChange({
+                                                    target: {
+                                                        name: "cadLink",
+                                                        value: val,
+                                                    },
+                                                });
+                                            }}
+                                        />
+                                        {(formData?.cadLink?.length || 0) >=
+                                            230 && (
+                                            <p
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform:
+                                                        "translateY(-50%)",
+                                                    margin: 0,
+                                                    fontSize: isPhone
+                                                        ? "2.5rem"
+                                                        : "0.8rem",
+                                                    color: "#ef4444",
+                                                    pointerEvents: "none",
+                                                }}
+                                            >
+                                                {250 -
+                                                    (formData?.cadLink
+                                                        ?.length || 0)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="d-createitem-input-group">
                                     <label>Store Link:</label>
-                                    <input
-                                        name="storeLink"
-                                        value={formData.storeLink}
-                                        onChange={handleChange}
-                                    />
+                                    <div
+                                        style={{
+                                            position: "relative",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <input
+                                            name="storeLink"
+                                            value={formData.storeLink || ""}
+                                            onChange={(e) => {
+                                                const val =
+                                                    e.target.value.slice(
+                                                        0,
+                                                        250,
+                                                    );
+                                                handleChange({
+                                                    target: {
+                                                        name: "storeLink",
+                                                        value: val,
+                                                    },
+                                                });
+                                            }}
+                                            style={{
+                                                paddingRight:
+                                                    (formData?.storeLink
+                                                        ?.length || 0) >= 230
+                                                        ? isPhone
+                                                            ? "100px"
+                                                            : "45px"
+                                                        : "10px",
+                                            }}
+                                        />
+                                        {(formData?.storeLink?.length || 0) >=
+                                            230 && (
+                                            <p
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "10px",
+                                                    top: "50%",
+                                                    transform:
+                                                        "translateY(-50%)",
+                                                    margin: 0,
+                                                    fontSize: isPhone
+                                                        ? "2.5rem"
+                                                        : "0.8rem",
+                                                    color: "#ef4444",
+                                                    pointerEvents: "none",
+                                                }}
+                                            >
+                                                {250 -
+                                                    (formData?.storeLink
+                                                        ?.length || 0)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="rowcontainer">
-                                    <button
-                                        type="submit"
-                                        className="d-createitem-submit-button"
-                                    >
-                                        Cancel
-                                    </button>
                                     <button
                                         type="submit"
                                         className="d-createitem-submit-button"

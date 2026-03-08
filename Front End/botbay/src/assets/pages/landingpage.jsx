@@ -151,7 +151,10 @@ function LandingPage() {
                                     >
                                         About
                                     </p>
-                                    <button className="navbutton">
+                                    <button
+                                        className="navbutton"
+                                        onClick={goToSignIn}
+                                    >
                                         Sign In
                                     </button>
                                 </div>
@@ -187,8 +190,16 @@ function LandingPage() {
                                 ></img>
                             </div>
                             <div className="evenspreadflex">
-                                <button className="herobutton">Sign Up</button>
-                                <button className="herobutton">
+                                <button
+                                    className="herobutton"
+                                    onClick={goToSignUp}
+                                >
+                                    Sign Up
+                                </button>
+                                <button
+                                    className="herobutton"
+                                    onClick={goToDashboard}
+                                >
                                     Try it Out
                                 </button>
                             </div>
