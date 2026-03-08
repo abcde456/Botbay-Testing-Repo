@@ -1,5 +1,11 @@
+NOW:
+
+Add character limits for all inputs
+
 NEXT UPDATE:
 Add battery history
 Add priority for critical stock
 Add ready batteries
 Align search bar with table
+Scale text too large to fit to smaller
+Add battery charger edit
