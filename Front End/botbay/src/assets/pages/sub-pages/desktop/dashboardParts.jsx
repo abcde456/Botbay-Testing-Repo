@@ -900,6 +900,23 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
     const [previousNeeded, setPreviousNeeded] = useState(0);
     const [previousQuant, setPreviousQuant] = useState(0);
 
+    function downloadJSON() {
+        const data = localStorage.getItem("partData") || "[]";
+
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "partData.json";
+
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     return (
         <>
             <div className="d-homepagecontainer">
@@ -932,7 +949,7 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                             Manage Tags
                                         </span>
                                     </button>
-                                    <button>
+                                    <button onClick={downloadJSON}>
                                         <MdDownload />
                                         <span style={{ marginLeft: 4 }}>
                                             JSON
@@ -957,7 +974,10 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                         Manage Tags
                                     </span>
                                 </button>
-                                <button style={{ fontSize: "3rem" }}>
+                                <button
+                                    style={{ fontSize: "3rem" }}
+                                    onClick={downloadJSON}
+                                >
                                     <MdDownload />
                                     <span style={{ marginLeft: 4 }}>JSON</span>
                                 </button>
@@ -1753,7 +1773,6 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                     >
                                         <input
                                             name="name"
-                                            placeholder="e.g. NeveRest Orbital 20"
                                             value={formData?.name || ""}
                                             onChange={(e) => {
                                                 const val =
@@ -1812,7 +1831,6 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                     >
                                         <input
                                             name="manufacturerId"
-                                            placeholder="e.g. am-3637b"
                                             value={
                                                 formData?.manufacturerId || ""
                                             }
@@ -1871,7 +1889,6 @@ function PartsPageDesktop({ partToRun, usePartToRun, onReturn, onReset }) {
                                     >
                                         <input
                                             name="manufacturer"
-                                            placeholder="e.g. Andymark"
                                             value={formData?.manufacturer || ""}
                                             onChange={(e) => {
                                                 const val =

@@ -19,6 +19,19 @@ function BatteryPageDesktop() {
     const [isPhone, setIsPhone] = useState(window.innerWidth < 1200);
 
     useEffect(() => {
+        const syncLocalState = () => {
+            const localData = localStorage.getItem("batteryList");
+            if (localData) {
+                setSavedBatteries(JSON.parse(localData));
+            }
+        };
+
+        window.addEventListener("storage", syncLocalState);
+
+        return () => window.removeEventListener("storage", syncLocalState);
+    }, []);
+
+    useEffect(() => {
         const handleResize = () => {
             setIsPhone(window.innerWidth < 1200);
         };

@@ -2,11 +2,22 @@
 const RENDER_URL = "https://botbay-python-services-latest.onrender.com";
 
 import { supabase } from "./auth.js";
-
 import { isUserSignedIn, getUserGroup } from "./auth.js";
 
 /**
- * Helper function to handle the authenticated fetch to Flask
+ * INTERNAL STATE: Store the Socket ID globally within this module.
+ * Set this once upon socket connection in your socket initialization file.
+ */
+let currentSocketId = null;
+
+export const setSocketId = (sid) => {
+    console.log(`[database.js] 🆔 Socket ID synchronized: ${sid}`);
+    currentSocketId = sid;
+};
+
+/**
+ * Helper function to handle the authenticated fetch to Flask.
+ * Automatically injects the 'sid' into the request body for POST/PUT.
  */
 async function flaskRequest(endpoint, method = "GET", body = null) {
     const {
@@ -15,7 +26,9 @@ async function flaskRequest(endpoint, method = "GET", body = null) {
     const token = session?.access_token;
 
     if (!token) {
-        console.error("User is not logged in");
+        console.error(
+            "[flaskRequest] ❌ No token found. User likely not logged in.",
+        );
         return { error: "No session found" };
     }
 
@@ -27,13 +40,22 @@ async function flaskRequest(endpoint, method = "GET", body = null) {
         },
     };
 
-    if (method !== "GET" && body) {
-        options.body = JSON.stringify(body);
+    // Automatically inject sid if it exists and method is not GET
+    if (method !== "GET") {
+        const payload = body || {};
+        options.body = JSON.stringify({
+            ...payload,
+            sid: currentSocketId,
+        });
     }
 
+    console.log(`[flaskRequest] 🚀 Sending ${method} to ${endpoint}`);
     const response = await fetch(`${RENDER_URL}${endpoint}`, options);
-    const result = await response.json();
 
+    // Handle empty successful responses
+    if (response.status === 204) return { success: true };
+
+    const result = await response.json();
     if (!response.ok) throw new Error(result.error || "Request failed");
     return result;
 }
@@ -42,22 +64,15 @@ async function flaskRequest(endpoint, method = "GET", body = null) {
 
 export async function overwritePart(part) {
     const { group: teamId } = await getUserGroup();
-
     try {
-        const { data, error } = await supabase.rpc("update_full_part", {
-            target_team_id: Number(teamId),
-            target_part_id: Number(part.id),
-            updated_part_data: part,
-        });
-
-        if (error) {
-            console.error("Error overwriting part in cloud:", error.message);
-            return { success: false, error: error.message };
-        }
-
-        return { success: true, data };
+        const result = await flaskRequest(
+            `/database/${teamId}/parts/overwrite-logic/${part.id}`,
+            "POST",
+            { updated_part_data: part },
+        );
+        return { success: true, data: result };
     } catch (err) {
-        console.error("System error in overwritePart:", err);
+        console.error("[Trace] ❌ overwritePart failed:", err);
         return { success: false, error: err.message };
     }
 }
@@ -65,50 +80,34 @@ export async function overwritePart(part) {
 export async function overwriteQuant(partId, quant, needed) {
     const { group: teamId } = await getUserGroup();
     try {
-        console.log("Attempting to push new quants");
-        // Explicitly cast to Numbers to match SQL int8/int4 types
-        const { data, error } = await supabase.rpc("update_part_quantities", {
-            target_team_id: Number(teamId),
-            target_part_id: Number(partId),
-            new_quant: Number(quant),
-            new_needed: Number(needed),
-        });
+        const result = await flaskRequest(
+            `/database/${teamId}/parts/update-quantities/${partId}`,
+            "POST",
+            {
+                new_quant: Number(quant),
+                new_needed: Number(needed),
+            },
+        );
 
-        if (error) {
-            console.error("RPC Error:", error.message);
-            return { success: false, error: error.message };
-        }
-
-        // Sync local storage so the Dashboard table updates immediately
-        if (data) {
-            localStorage.setItem("partData", JSON.stringify(data));
+        if (result.success && result.data) {
+            localStorage.setItem("partData", JSON.stringify(result.data));
             window.dispatchEvent(new Event("storage"));
         }
-
-        return { success: true, data };
+        return result;
     } catch (err) {
-        console.error("System Error in overwriteQuant:", err);
+        console.error("[Trace] ❌ overwriteQuant failed:", err);
         return { success: false, error: err.message };
     }
 }
 
 export const cloudCreatePart = async (itemData, teamId) => {
     try {
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
-        const { data, error } = await supabase.rpc("create_new_part_cloud", {
+        return await flaskRequest(`/database/${teamId}/parts/add`, "POST", {
             item_data: itemData,
-            target_team_id: teamId,
-            requestor_id: user.id,
         });
-
-        if (error) throw error;
-        return { success: true, item: data };
-    } catch (error) {
-        console.error("Cloud append failed:", error.message);
-        return { success: false, error: error.message };
+    } catch (err) {
+        console.error("[Trace] ❌ cloudCreatePart failed:", err);
+        return { success: false, error: err.message };
     }
 };
 
@@ -119,26 +118,25 @@ export async function cloudDeletePart(id) {
     if (signedIn) {
         const { group: teamId } = await getUserGroup();
         if (teamId) {
-            const { data, error } = await supabase.rpc("delete_part_secure", {
-                target_part_id: id,
-                target_team_id: teamId,
-            });
-
-            if (!error) {
-                success = true;
-            } else {
-                console.error("Cloud delete failed:", error);
+            try {
+                // Use POST so we can send the SID body to the server
+                const result = await flaskRequest(
+                    `/database/${teamId}/parts/delete/${id}`,
+                    "POST",
+                    {},
+                );
+                success = result.success;
+            } catch (err) {
+                console.error("[Delete Trace] ❌ Cloud delete error:", err);
             }
         }
     }
 
+    // Local Storage Cleanup (Optimistic Update)
     const rawData = localStorage.getItem("partData") || "[]";
     const data = JSON.parse(rawData);
     const updated = data.filter((p) => String(p.id) !== String(id));
-
     localStorage.setItem("partData", JSON.stringify(updated));
-
-    // Notify the Dashboard (the "poke" we set up earlier)
     window.dispatchEvent(new Event("storage"));
 
     return success || !signedIn;
@@ -146,21 +144,14 @@ export async function cloudDeletePart(id) {
 
 export async function readPart(partId) {
     const { group: teamId } = await getUserGroup();
-
     try {
-        const { data, error } = await supabase.rpc("get_single_part", {
-            target_team_id: Number(teamId),
-            target_part_id: Number(partId),
-        });
-
-        if (error) {
-            console.error("Error reading part from cloud:", error.message);
-            return null;
-        }
-
-        return data;
+        const result = await flaskRequest(
+            `/database/${teamId}/parts/get/${partId}`,
+            "GET",
+        );
+        return result.data;
     } catch (err) {
-        console.error("System error in readPart:", err);
+        console.error("[Trace] ❌ readPart failed:", err);
         return null;
     }
 }
@@ -169,52 +160,38 @@ export async function readPart(partId) {
 
 export async function deleteBattery(nameToDelete) {
     const { group: teamId } = await getUserGroup();
-
     try {
-        const { data, error } = await supabase.rpc("delete_battery_by_name", {
-            target_team_id: Number(teamId),
-            battery_name: nameToDelete,
-        });
-
-        if (error) throw error;
-        return { success: true, data };
+        // Use POST for SID support
+        return await flaskRequest(
+            `/database/${teamId}/batteries/delete/${nameToDelete}`,
+            "POST",
+            {},
+        );
     } catch (err) {
-        console.error("Database error deleting battery:", err.message);
         return { success: false, error: err.message };
     }
 }
 
 export async function createBattery(battery) {
     const { group: teamId } = await getUserGroup();
-
     try {
-        const { data, error } = await supabase.rpc("add_new_battery", {
-            target_team_id: Number(teamId),
-            new_battery_object: battery,
+        return await flaskRequest(`/database/${teamId}/batteries/add`, "POST", {
+            battery,
         });
-
-        if (error) throw error;
-        return { success: true, data };
     } catch (err) {
-        console.error("Database error adding battery:", err.message);
         return { success: false, error: err.message };
     }
 }
 
 export async function updateBatteryStatusCloud(updatedBattery) {
     const { group: teamId } = await getUserGroup();
-
     try {
-        const { data, error } = await supabase.rpc("update_battery_by_name", {
-            target_team_id: Number(teamId),
-            target_name: updatedBattery.name,
-            new_battery_data: updatedBattery,
-        });
-
-        if (error) throw error;
-        return { success: true, data };
+        return await flaskRequest(
+            `/database/${teamId}/batteries/update`,
+            "POST",
+            { updatedBattery },
+        );
     } catch (err) {
-        console.error("Database error updating battery:", err.message);
         return { success: false, error: err.message };
     }
 }
@@ -223,44 +200,31 @@ export async function updateBatteryStatusCloud(updatedBattery) {
 
 export async function deleteTagCloud(tagName) {
     const { group: teamId } = await getUserGroup();
-
     try {
-        const { data, error } = await supabase.rpc("delete_tag_globally", {
-            target_team_id: Number(teamId),
-            tag_name_to_delete: tagName,
-        });
-
-        if (error) throw error;
-        return { success: true, data };
+        // Use POST for SID support
+        return await flaskRequest(
+            `/database/${teamId}/tags/delete/${tagName}`,
+            "POST",
+            {},
+        );
     } catch (err) {
-        console.error("Database error:", err.message);
         return { success: false, error: err.message };
     }
 }
 
 export async function createTag(tag) {
     const { group: teamId } = await getUserGroup();
-
     try {
-        const { data, error } = await supabase.rpc("add_new_tag", {
-            target_team_id: Number(teamId),
-            new_tag_object: tag,
+        return await flaskRequest(`/database/${teamId}/tags/add`, "POST", {
+            tag,
         });
-
-        if (error) throw error;
-        return { success: true, data };
     } catch (err) {
-        console.error("Database error adding tag:", err.message);
         return { success: false, error: err.message };
     }
 }
 
 /// ~~~ SYNC RELATED ~~~ ///
 
-/**
- * Syncs all local storage data (Parts, Tags, Batteries) to the cloud group
- * in a single request to the Python backend.
- */
 export async function syncLocalData(groupId, parts, tags, batteries) {
     return await flaskRequest(`/database/${groupId}/sync`, "POST", {
         parts: parts || [],

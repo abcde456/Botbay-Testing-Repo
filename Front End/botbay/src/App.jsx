@@ -7,6 +7,7 @@ import SignInPage from "./assets/pages/signinpage.jsx";
 import ForgotPasswordPage from "./assets/pages/forgotpasswordpage.jsx";
 import Dashboard from "./assets/pages/dashboard.jsx";
 import UpdatePasswordPage from "./assets/pages/updatepassword.jsx";
+import PrivacyPolicy from "./assets/pages/privacypolicy.jsx";
 
 function App() {
     (function () {
@@ -16,7 +17,7 @@ function App() {
         const isReload =
             perfEntries.length > 0 && perfEntries[0].type === "reload";
 
-        // 2. THE FIX: Check BOTH storage engines for the auth token
+        // 2. Check BOTH storage engines for the auth token
         const findAuthToken = () => {
             const sKey = Object.keys(sessionStorage).find((k) =>
                 k.includes("-auth-token"),
@@ -64,7 +65,6 @@ function App() {
 
     useEffect(() => {
         const handleTabClose = () => {
-            // Use the same dual-check logic here for consistency
             const sKey = Object.keys(sessionStorage).find((k) =>
                 k.includes("-auth-token"),
             );
@@ -100,6 +100,7 @@ function App() {
                         path="/updatepassword"
                         element={<UpdatePasswordPage />}
                     />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
                 </Routes>
             </div>
         </Router>

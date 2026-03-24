@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Eye, EyeOff, MailCheck, Loader2 } from "lucide-react";
 import signUpLogo from "../images/LogoTrans.png";
 import { switchToPage } from "../scripts/navigation.js";
@@ -16,7 +17,8 @@ function SignUpPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isPhone, setIsPhone] = useState(window.innerWidth <= 1199);
 
-    // Views: 'form' | 'success' | 'group-menu'
+    const [hasAgreed, setHasAgreed] = useState(false);
+
     const [view, setView] = useState("form");
 
     const goToSignIn = switchToPage("/signin");
@@ -32,6 +34,19 @@ function SignUpPage() {
         if (isLoading) return;
 
         setErrorMessage("");
+
+        if (!hasAgreed) {
+            setErrorMessage(
+                "You must agree to the Privacy Policy to continue.",
+            );
+            return;
+        }
+
+        if (!email || !password) {
+            setErrorMessage("Please fill in both fields.");
+            return;
+        }
+
         setIsLoading(true);
 
         if (!email || !password) {
@@ -210,6 +225,58 @@ function SignUpPage() {
                                     </button>
                                 </div>
 
+                                <div
+                                    className="privacy-agreement-container"
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "12px",
+                                        marginTop: "20px",
+                                        marginBottom: "10px",
+                                        justifyContent: isPhone
+                                            ? "center"
+                                            : "flex-start",
+                                        width: "100%",
+                                    }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        id="privacyAgree"
+                                        checked={hasAgreed}
+                                        onChange={(e) =>
+                                            setHasAgreed(e.target.checked)
+                                        }
+                                        style={{
+                                            width: isPhone ? "3rem" : "1.2rem",
+                                            height: isPhone ? "3rem" : "1.2rem",
+                                            cursor: "pointer",
+                                            accentColor: "#60a5fa",
+                                        }}
+                                    />
+                                    <label
+                                        htmlFor="privacyAgree"
+                                        style={{
+                                            color: "rgba(255, 255, 255, 0.8)",
+                                            fontSize: isPhone
+                                                ? "3.5rem"
+                                                : "0.9rem",
+                                            fontFamily: "Inter",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        I agree to the{" "}
+                                        <Link
+                                            to="/privacy"
+                                            style={{
+                                                color: "#60a5fa",
+                                                textDecoration: "underline",
+                                            }}
+                                        >
+                                            Privacy Policy
+                                        </Link>
+                                    </label>
+                                </div>
+
                                 <div className="bottomcontainer">
                                     <p
                                         className="bottomtext"
@@ -245,7 +312,7 @@ function SignUpPage() {
                                             <>
                                                 <Loader2
                                                     className="animate-spin"
-                                                    size={isPhone ? 48 : 20}
+                                                    size={20}
                                                 />
                                                 Processing...
                                             </>

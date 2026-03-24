@@ -240,7 +240,7 @@ function SignInPage() {
                                             <>
                                                 <Loader2
                                                     className="animate-spin"
-                                                    size={isPhone ? 48 : 20}
+                                                    size={20}
                                                 />
                                                 Logging in...
                                             </>

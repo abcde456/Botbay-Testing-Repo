@@ -1,6 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { isUserSignedIn, getUserGroup } from "../../scripts/auth";
 import { cloudCreatePart } from "../../scripts/database";
+
+import {
+    RiExpandUpDownFill,
+    RiArrowDownSFill,
+    RiArrowUpSFill,
+} from "react-icons/ri";
+
+import andymarklogo from "../../images/andymark.png";
+import revlogo from "../../images/rev.png";
+import gobildalogo from "../../images/gobilda.png";
 
 function useIsPhone() {
     const [isPhone, setIsPhone] = useState(window.innerWidth < 1200);
@@ -16,20 +26,116 @@ function useIsPhone() {
 
 export function AddItemMenuDesktop({ onClose }) {
     const [partIndexOpen, setPartIndexOpen] = useState(null);
+    const [existingSelectOpen, setExistingSelectOpen] = useState(true);
+    const [existingOpen, setExistingOpen] = useState(false);
+    const [renderingPartIndex, setRenderingPartIndex] = useState(false);
+    const [currentManufacturer, setCurrentManufacturer] = useState(1); // 1: Andymark, 2: REV, 3: Gobilda
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedParts, setSelectedParts] = useState([]);
+    const [sortConfig, setSortConfig] = useState({
+        key: "name",
+        direction: "asc",
+    });
+
+    // Mock Data
+    const [partsData] = useState([
+        {
+            id: "am-1234",
+            name: "NeverRest 40 Gearmotor",
+            manufacturer: 1,
+            img: "/assets/icons/motor.png",
+        },
+        {
+            id: "rev-11-1100",
+            name: "Core Hex Motor",
+            manufacturer: 2,
+            img: "/assets/icons/hex.png",
+        },
+        {
+            id: "gb-3101",
+            name: "5202 Yellow Jacket",
+            manufacturer: 3,
+            img: "/assets/icons/gb_motor.png",
+        },
+    ]);
+
+    // Sorting & Filtering Engine
+    const filteredAndSortedParts = useMemo(() => {
+        let result = partsData.filter((part) => {
+            const matchesManu = part.manufacturer === currentManufacturer;
+            const matchesSearch =
+                part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                part.id.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesManu && matchesSearch;
+        });
+
+        if (sortConfig.key) {
+            result.sort((a, b) => {
+                if (a[sortConfig.key] < b[sortConfig.key])
+                    return sortConfig.direction === "asc" ? -1 : 1;
+                if (a[sortConfig.key] > b[sortConfig.key])
+                    return sortConfig.direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+        return result;
+    }, [partsData, currentManufacturer, searchTerm, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = "asc";
+        if (sortConfig.key === key && sortConfig.direction === "asc") {
+            direction = "desc";
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const togglePartSelection = (id) => {
+        setSelectedParts((prev) =>
+            prev.includes(id)
+                ? prev.filter((item) => item !== id)
+                : [...prev, id],
+        );
+    };
+
+    const getSortIcon = (columnKey) => {
+        if (sortConfig.key !== columnKey) return <RiExpandUpDownFill />;
+        return sortConfig.direction === "asc" ? (
+            <RiArrowUpSFill />
+        ) : (
+            <RiArrowDownSFill />
+        );
+    };
+
+    function handleClose() {
+        setExistingOpen(false);
+        setExistingSelectOpen(false);
+        setRenderingPartIndex(false);
+        setPartIndexOpen(null);
+        onClose();
+    }
+
     function handleReturn() {
         setPartIndexOpen(null);
     }
-    // Part type indexes:
-    // null -> not open
-    // 0 -> Motor
-    // 1 -> Servo
-    // 2 -> Structural
-    // 3 -> Electrical
-    // 4 -> Sensor
-    // 5 -> 3D Printed
-    // 6 -> Machined
-    // 7 -> Other
-    // 8 -> Wheel
+
+    function handleOpenSelect() {
+        setExistingOpen(false);
+        setExistingSelectOpen(true);
+        setRenderingPartIndex(false);
+    }
+
+    function handleSelect(option) {
+        if (option === 1) {
+            setExistingOpen(true);
+            setExistingSelectOpen(false);
+            setRenderingPartIndex(false);
+        } else {
+            setExistingOpen(false);
+            setExistingSelectOpen(false);
+            setRenderingPartIndex(true);
+        }
+    }
+
     function renderCorrectItemToAdd() {
         switch (partIndexOpen) {
             case 0:
@@ -56,51 +162,182 @@ export function AddItemMenuDesktop({ onClose }) {
                 );
             case 7:
                 return <AddOther onReturn={handleReturn} onClose={onClose} />;
+            default:
+                return null;
         }
     }
 
     return (
-        <>
-            <div className="d-partoverlay">
-                <button className="d-partoverlay-exitbutton" onClick={onClose}>
-                    X
-                </button>
-                <div className={`d-titlecontainer d-titlecontainer-centered`}>
-                    <p>Add Item</p>
-                </div>
-                {partIndexOpen === null && (
-                    <div className="d-createitem-centercontainer">
-                        <div className="d-createitem-middlecontainer">
-                            <button onClick={() => setPartIndexOpen(0)}>
-                                Motor
-                            </button>
-                            <button onClick={() => setPartIndexOpen(1)}>
-                                Servo
-                            </button>
-                            <button onClick={() => setPartIndexOpen(2)}>
-                                Structural
-                            </button>
-                            <button onClick={() => setPartIndexOpen(3)}>
-                                Electrical
-                            </button>
-                            <button onClick={() => setPartIndexOpen(4)}>
-                                Sensor
-                            </button>
-                            <button onClick={() => setPartIndexOpen(5)}>
-                                3D Printed
-                            </button>
-                            <button onClick={() => setPartIndexOpen(6)}>
-                                Machined
-                            </button>
-                            <button onClick={() => setPartIndexOpen(7)}>
-                                Other
-                            </button>
-                        </div>
-                    </div>
-                )}
-                {partIndexOpen !== null && renderCorrectItemToAdd()}
+        <div className="d-partoverlay">
+            <button className="d-partoverlay-exitbutton" onClick={handleClose}>
+                X
+            </button>
+            <div className="d-titlecontainer d-titlecontainer-centered">
+                <p>Add Item</p>
             </div>
-        </>
+
+            {existingSelectOpen && (
+                <div className="d-createitem-centercontainer">
+                    <div className="d-createitem-middlecontainer">
+                        <button onClick={() => handleSelect(1)}>
+                            Existing Part
+                        </button>
+                        <button onClick={() => handleSelect(2)}>
+                            Custom Part
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {existingOpen && (
+                <div className="d-additem-existing-main-wrapper">
+                    <button
+                        className="d-partoverlay-returnbutton"
+                        onClick={handleOpenSelect}
+                    >
+                        &lt;
+                    </button>
+
+                    <div className="d-additem-existing-manu-tabs">
+                        <button
+                            className={
+                                currentManufacturer === 1 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(1)}
+                        >
+                            <img src={andymarklogo} alt="Andymark" />
+                        </button>
+                        <button
+                            className={
+                                currentManufacturer === 2 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(2)}
+                        >
+                            <img src={revlogo} alt="REV" />
+                        </button>
+                        <button
+                            className={
+                                currentManufacturer === 3 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(3)}
+                        >
+                            <img src={gobildalogo} alt="Gobilda" />
+                        </button>
+                    </div>
+
+                    <div className="d-additem-existing-inputwrapper">
+                        <input
+                            className="d-additem-existing-searchbar"
+                            type="text"
+                            placeholder="Search by name or ID..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="d-additem-existing-listcontainer">
+                        <table className="d-additem-existing-table">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: "15%" }}>Icon</th>
+                                    <th
+                                        style={{
+                                            width: "45%",
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={() => requestSort("name")}
+                                    >
+                                        Name {getSortIcon("name")}
+                                    </th>
+                                    <th
+                                        style={{
+                                            width: "25%",
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={() => requestSort("id")}
+                                    >
+                                        ID {getSortIcon("id")}
+                                    </th>
+                                    <th style={{ width: "15%" }}>Select</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredAndSortedParts.map((part) => (
+                                    <tr key={part.id}>
+                                        <td>
+                                            <img
+                                                src={part.img}
+                                                alt="part"
+                                                className="d-additem-existing-table-img"
+                                                style={{ width: "30px" }}
+                                            />
+                                        </td>
+                                        <td
+                                            style={{
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                whiteSpace: "nowrap",
+                                            }}
+                                        >
+                                            {part.name}
+                                        </td>
+                                        <td>{part.id}</td>
+                                        <td>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedParts.includes(
+                                                    part.id,
+                                                )}
+                                                onChange={() =>
+                                                    togglePartSelection(part.id)
+                                                }
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {selectedParts.length > 0 && (
+                        <button className="d-additem-existing-add-trigger">
+                            Add {selectedParts.length} Selected Items
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {partIndexOpen === null && renderingPartIndex && (
+                <div className="d-createitem-centercontainer">
+                    <button
+                        className="d-partoverlay-returnbutton"
+                        onClick={handleOpenSelect}
+                    >
+                        &lt;
+                    </button>
+                    <div className="d-createitem-middlecontainer">
+                        {[
+                            "Motor",
+                            "Servo",
+                            "Structural",
+                            "Electrical",
+                            "Sensor",
+                            "3D Printed",
+                            "Machined",
+                            "Other",
+                        ].map((label, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setPartIndexOpen(idx)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {partIndexOpen !== null && renderCorrectItemToAdd()}
+        </div>
     );
 }
 
@@ -240,7 +477,6 @@ function AddMotor({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="e.g. NeveRest Orbital 20"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -283,7 +519,6 @@ function AddMotor({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturerId"
-                                placeholder="e.g. am-3637b"
                                 value={formData.manufacturerId}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -327,7 +562,6 @@ function AddMotor({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturer"
-                                placeholder="e.g. am-3637b"
                                 value={formData.manufacturer}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -425,7 +659,6 @@ function AddMotor({ onReturn, onClose }) {
                         >
                             <input
                                 name="connectorTypes"
-                                placeholder="JST-VH-2, Anderson Powerpoles"
                                 value={formData.connectorTypes}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -869,7 +1102,6 @@ function AddServo({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="e.g. Smart Robot Servo"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -912,7 +1144,6 @@ function AddServo({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturerId"
-                                placeholder="e.g. REV-41-1097"
                                 value={formData.manufacturerId}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -956,7 +1187,6 @@ function AddServo({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturer"
-                                placeholder="e.g. rev"
                                 value={formData.manufacturer}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -1045,7 +1275,6 @@ function AddServo({ onReturn, onClose }) {
                                 step="0.1"
                                 max={99999}
                                 name="sizeL"
-                                placeholder="L"
                                 value={formData.sizeL}
                                 onChange={handleChange}
                             />
@@ -1054,7 +1283,6 @@ function AddServo({ onReturn, onClose }) {
                                 step="0.1"
                                 max={99999}
                                 name="sizeW"
-                                placeholder="W"
                                 value={formData.sizeW}
                                 onChange={handleChange}
                             />
@@ -1063,7 +1291,6 @@ function AddServo({ onReturn, onClose }) {
                                 step="0.1"
                                 max={99999}
                                 name="sizeH"
-                                placeholder="H"
                                 value={formData.sizeH}
                                 onChange={handleChange}
                             />
@@ -1117,7 +1344,6 @@ function AddServo({ onReturn, onClose }) {
                         >
                             <input
                                 name="gearMaterial"
-                                placeholder="e.g. metal"
                                 value={formData.gearMaterial}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -1161,7 +1387,6 @@ function AddServo({ onReturn, onClose }) {
                         >
                             <input
                                 name="splineType"
-                                placeholder="e.g. 25T"
                                 value={formData.splineType}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -1205,7 +1430,6 @@ function AddServo({ onReturn, onClose }) {
                         >
                             <input
                                 name="splineThreadType"
-                                placeholder="e.g. M3"
                                 value={formData.splineThreadType}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -1535,7 +1759,6 @@ function AddStructural({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="e.g. 45mm U Channel"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -1578,7 +1801,6 @@ function AddStructural({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturerId"
-                                placeholder="e.g. REV-41-1755"
                                 value={formData.manufacturerId}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -1622,7 +1844,6 @@ function AddStructural({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturer"
-                                placeholder="e.g. rev"
                                 value={formData.manufacturer}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -2020,7 +2241,6 @@ function AddElectrical({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="e.g. Tamiya Male to PowerPole"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -2063,7 +2283,6 @@ function AddElectrical({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturerId"
-                                placeholder="e.g. 70191"
                                 value={formData.manufacturerId}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -2107,7 +2326,6 @@ function AddElectrical({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturer"
-                                placeholder="e.g. studica"
                                 value={formData.manufacturer}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -2196,7 +2414,6 @@ function AddElectrical({ onReturn, onClose }) {
                         >
                             <input
                                 name="connectorTypes"
-                                placeholder="Tamiya, Anderson Powerpoles"
                                 value={formData.connectorTypes}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -2296,7 +2513,6 @@ function AddElectrical({ onReturn, onClose }) {
                         >
                             <input
                                 name="replaceableFuse"
-                                placeholder="e.g. 20A Mini Blade"
                                 value={formData.replaceableFuse}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -2340,7 +2556,6 @@ function AddElectrical({ onReturn, onClose }) {
                         >
                             <input
                                 name="chargeRates"
-                                placeholder="e.g. 2C"
                                 value={formData.chargeRates}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -2391,7 +2606,6 @@ function AddElectrical({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeL"
-                                placeholder="L"
                                 value={formData.sizeL}
                                 onChange={handleChange}
                             />
@@ -2399,7 +2613,6 @@ function AddElectrical({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeW"
-                                placeholder="W"
                                 value={formData.sizeW}
                                 onChange={handleChange}
                             />
@@ -2407,7 +2620,6 @@ function AddElectrical({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeH"
-                                placeholder="H"
                                 value={formData.sizeH}
                                 onChange={handleChange}
                             />
@@ -2703,7 +2915,6 @@ function AddSensor({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="e.g. Color Sensor V2"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -2746,7 +2957,6 @@ function AddSensor({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturerId"
-                                placeholder="e.g. REV-31-1537"
                                 value={formData.manufacturerId}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -2791,7 +3001,6 @@ function AddSensor({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturer"
-                                placeholder="e.g. rev"
                                 value={formData.manufacturer}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -2880,7 +3089,6 @@ function AddSensor({ onReturn, onClose }) {
                         >
                             <input
                                 name="sensorType"
-                                placeholder="e.g. I2C"
                                 value={formData.sensorType}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -2931,7 +3139,6 @@ function AddSensor({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeL"
-                                placeholder="L"
                                 value={formData.sizeL}
                                 onChange={handleChange}
                             />
@@ -2939,7 +3146,6 @@ function AddSensor({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeW"
-                                placeholder="W"
                                 value={formData.sizeW}
                                 onChange={handleChange}
                             />
@@ -2947,7 +3153,6 @@ function AddSensor({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeH"
-                                placeholder="H"
                                 value={formData.sizeH}
                                 onChange={handleChange}
                             />
@@ -2961,7 +3166,6 @@ function AddSensor({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="proxMin"
-                                placeholder="Min"
                                 value={formData.proxMin}
                                 onChange={handleChange}
                             />
@@ -2969,7 +3173,6 @@ function AddSensor({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="proxMax"
-                                placeholder="Max"
                                 value={formData.proxMax}
                                 onChange={handleChange}
                             />
@@ -2983,7 +3186,6 @@ function AddSensor({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="distMin"
-                                placeholder="Min"
                                 value={formData.distMin}
                                 onChange={handleChange}
                             />
@@ -2991,7 +3193,6 @@ function AddSensor({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="distMax"
-                                placeholder="Max"
                                 value={formData.distMax}
                                 onChange={handleChange}
                             />
@@ -3021,7 +3222,6 @@ function AddSensor({ onReturn, onClose }) {
                         >
                             <input
                                 name="imu"
-                                placeholder="e.g. 6-Axis"
                                 value={formData.imu}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -3355,7 +3555,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="My Random Brick"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -3526,7 +3725,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeL"
-                                placeholder="L"
                                 value={formData.sizeL}
                                 onChange={handleChange}
                             />
@@ -3534,7 +3732,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeW"
-                                placeholder="W"
                                 value={formData.sizeW}
                                 onChange={handleChange}
                             />
@@ -3542,7 +3739,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="sizeH"
-                                placeholder="H"
                                 value={formData.sizeH}
                                 onChange={handleChange}
                             />
@@ -3561,7 +3757,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                         >
                             <input
                                 name="filament"
-                                placeholder="e.g. PLA, PETG"
                                 value={formData.filament}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -3615,7 +3810,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                         >
                             <input
                                 name="infillPattern"
-                                placeholder="e.g. grid, gyroid"
                                 value={formData.infillPattern}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -3688,7 +3882,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                         >
                             <input
                                 name="supportType"
-                                placeholder="e.g. Tree, Snug"
                                 value={formData.supportType}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -3767,7 +3960,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                         >
                             <input
                                 name="brimType"
-                                placeholder="e.g. Outer only"
                                 value={formData.brimType}
                                 maxLength={150}
                                 onChange={handleChange}
@@ -3857,7 +4049,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="timeH"
-                                placeholder="H"
                                 value={formData.timeH}
                                 onChange={handleChange}
                             />
@@ -3865,7 +4056,6 @@ function Add3dPrinted({ onReturn, onClose }) {
                                 type="number"
                                 max={99999}
                                 name="timeM"
-                                placeholder="M"
                                 value={formData.timeM}
                                 onChange={handleChange}
                             />
@@ -4133,7 +4323,6 @@ function AddMachined({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="e.g. My Random Plate"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -4176,7 +4365,6 @@ function AddMachined({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturerId"
-                                placeholder="e.g. Custom-01"
                                 value={formData.manufacturerId}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -4221,7 +4409,6 @@ function AddMachined({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturer"
-                                placeholder="e.g. custom"
                                 value={formData.manufacturer}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -4592,7 +4779,6 @@ function AddOther({ onReturn, onClose }) {
                         >
                             <input
                                 name="name"
-                                placeholder="e.g. Battery Strap"
                                 value={formData.name}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -4635,7 +4821,6 @@ function AddOther({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturerId"
-                                placeholder="e.g. MISC-001"
                                 value={formData.manufacturerId}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -4680,7 +4865,6 @@ function AddOther({ onReturn, onClose }) {
                         >
                             <input
                                 name="manufacturer"
-                                placeholder="e.g. Generic"
                                 value={formData.manufacturer}
                                 maxLength={30}
                                 onChange={handleChange}
@@ -4772,7 +4956,6 @@ function AddOther({ onReturn, onClose }) {
                             <textarea
                                 className="d-createitem-input"
                                 name="description"
-                                placeholder="Additional details..."
                                 value={formData.description}
                                 maxLength={550}
                                 onChange={handleChange}

@@ -88,7 +88,6 @@
 
 .signupinput:focus,
 .passwordinput:focus {
-    background-color: #ffffff;
     border-color: #ffffff;
     box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
 }
@@ -180,6 +179,44 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+.privacy-agreement-container {
+    display: flex;
+    justify-content: center !important;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.privacy-agreement-container input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 4px;
+    display: grid;
+    place-content: center;
+}
+
+.privacy-agreement-container input[type="checkbox"]::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em #60a5fa;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.privacy-agreement-container input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}
+
+.privacy-agreement-container input[type="checkbox"]:focus {
+    outline: 2px solid rgba(96, 165, 250, 0.5);
 }
 
 @media screen and (max-width: 1099px) {

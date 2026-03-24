@@ -34,7 +34,7 @@ async function flaskRequest(endpoint, method = "GET", body = null) {
         method: method,
         headers: {
             "Content-Type": "application/json",
-            Authorization: token,
+            Authorization: "Bearer " + token,
         },
     };
 
@@ -52,7 +52,10 @@ export const signUpUser = async (email, password) => {
     return await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: "http://localhost:5173/#/signup" },
+        options: {
+            emailRedirectTo:
+                "https://abcde456.github.io/Botbay-Testing-Repo/#/signup",
+        },
     });
 };
 
@@ -298,7 +301,7 @@ export const verifyCurrentPassword = async (password) => {
  */
 export const sendPasswordResetEmail = async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/#/updatepassword`,
+        redirectTo: `https://abcde456.github.io/Botbay-Testing-Repo/#/updatepassword`,
     });
     if (error) throw error;
     return { success: true };

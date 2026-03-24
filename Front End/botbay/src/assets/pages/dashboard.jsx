@@ -12,25 +12,19 @@ import {
     FaTimes,
 } from "react-icons/fa";
 import { IoMdSettings } from "react-icons/io";
-
 import HomePageDesktop from "./sub-pages/desktop/dashboardHome";
-
 import PartsPageDesktop from "./sub-pages/desktop/dashboardParts";
 import PartsPagePhone from "./sub-pages/phone/dashboardParts";
-
 import BatteryPageDesktop from "./sub-pages/desktop/dashboardBattery";
 import BatteryPagePhone from "./sub-pages/phone/dashboardBattery";
-
 import SettingsPageDesktop from "./sub-pages/desktop/dashboardSettings";
 import SettingsPagePhone from "./sub-pages/phone/dashboardSettings";
-
 import sidebarLogo from "../images/LogoTrans.png";
-
 import { getCloudData } from "../scripts/database.js";
-
 import { fetchGroupData } from "../scripts/auth.js";
-
 import { isUserSignedIn } from "../scripts/auth.js";
+import { io } from "socket.io-client";
+import { setSocketId } from "../scripts/database.js";
 
 function Dashboard() {
     const [partToRun, setPartToRun] = React.useState(null);
@@ -41,6 +35,161 @@ function Dashboard() {
     const isDesktop = useMediaQuery({ query: "(min-width: 1100px)" });
 
     const [isHydrating, setIsHydrating] = React.useState(true);
+
+    const [teamId, setTeamId] = useState(null);
+
+    const handleRealtimeSync = (action, payload) => {
+        // 1. Determine which key we are touching
+        let storageKey = "";
+        if (action.includes("part") || action.includes("quant"))
+            storageKey = "partData";
+        else if (action.includes("battery")) storageKey = "batteryList";
+        else if (action.includes("tag")) storageKey = "taglist";
+
+        // Safety: If no key or no payload, stop immediately
+        if (!storageKey || !payload) return;
+
+        // --- FULL OVERWRITE CHECK ---
+        if (Array.isArray(payload)) {
+            localStorage.setItem(storageKey, JSON.stringify(payload));
+            window.dispatchEvent(new Event("storage"));
+            console.log(`[Sync] 📋 Full overwrite applied to ${storageKey}`);
+            return;
+        }
+
+        // 2. FETCH AND PARSE DATA
+        const raw = localStorage.getItem(storageKey);
+        let currentData = [];
+        try {
+            currentData = JSON.parse(raw || "[]");
+        } catch (e) {
+            console.error("❌ Storage Parse Error:", e);
+            return;
+        }
+
+        // 3. IDENTIFIER EXTRACTION (The "Smart Match")
+        // We look for .id first (Parts), then .name (Batteries/Tags)
+        const incomingId = payload.id !== undefined ? String(payload.id) : null;
+        const incomingName = payload.name || null;
+        const targetVal = incomingId || incomingName;
+
+        if (!targetVal) {
+            console.warn("[Sync] ⚠️ No identifier found in payload:", payload);
+            return;
+        }
+
+        // Helper to get the ID/Name of an item in the existing array
+        const getIdentifier = (item) =>
+            item.id !== undefined ? String(item.id) : item.name;
+
+        // 4. THE ECHO SHIELD
+        const exists = currentData.some(
+            (item) => getIdentifier(item) === targetVal,
+        );
+
+        if (action.endsWith("_added") && exists) return;
+        if (action.endsWith("_deleted") && !exists) return;
+
+        let updatedData = [...currentData];
+
+        // 5. PERFORM THE ACTION
+        if (action.endsWith("_added")) {
+            updatedData = [...currentData, payload];
+            console.log(`✨ Sync Add: ${targetVal}`);
+        } else if (action.endsWith("_deleted")) {
+            updatedData = currentData.filter(
+                (item) => getIdentifier(item) !== targetVal,
+            );
+            console.log(`🗑️ Sync Delete: ${targetVal}`);
+        } else if (
+            action.includes("update") ||
+            action.includes("logic") ||
+            action.includes("quant")
+        ) {
+            // This handles "quant_updated", "part_updated", and "overwrite-logic"
+            if (!exists) {
+                // Fallback: If we missed the 'add' event, add it now
+                updatedData = [...currentData, payload];
+            } else {
+                updatedData = currentData.map((item) =>
+                    getIdentifier(item) === targetVal
+                        ? { ...item, ...payload }
+                        : item,
+                );
+            }
+            console.log(`🔄 Sync Update: ${targetVal}`);
+        }
+
+        // 6. PERSIST AND NOTIFY UI
+        localStorage.setItem(storageKey, JSON.stringify(updatedData));
+        window.dispatchEvent(new Event("storage"));
+    };
+
+    // 1. WebSocket Listener for Real-time Updates
+    useEffect(() => {
+        if (!teamId) return;
+
+        // Use a single instance and clean up properly
+        const socket = io(
+            "https://botbay-python-services-latest.onrender.com",
+            {
+                transports: ["websocket", "polling"],
+                reconnection: true,
+            },
+        );
+
+        socket.on("connect", () => {
+            console.log("📡 SOCKET: Connected! ID:", socket.id);
+
+            setSocketId(socket.id);
+
+            const getFreshToken = () => {
+                const key =
+                    Object.keys(localStorage).find((k) =>
+                        k.includes("-auth-token"),
+                    ) ||
+                    Object.keys(sessionStorage).find((k) =>
+                        k.includes("-auth-token"),
+                    );
+                if (!key) return null;
+                try {
+                    const data = JSON.parse(
+                        localStorage.getItem(key) ||
+                            sessionStorage.getItem(key),
+                    );
+                    return data?.access_token || null;
+                } catch {
+                    return null;
+                }
+            };
+
+            socket.emit("join_team_room", {
+                teamId: teamId,
+                token: getFreshToken(),
+            });
+        });
+
+        socket.on("joined", (resp) => {
+            console.log("✅ SOCKET: Confirmed in Room:", resp.room);
+        });
+
+        // THE LISTENER
+        socket.on("database_update", (data) => {
+            console.log("🚀 SOCKET DATA ARRIVED:", data);
+            handleRealtimeSync(data.action, data.payload);
+        });
+
+        socket.on("disconnect", (reason) => {
+            console.warn("❌ SOCKET: Disconnected:", reason);
+        });
+
+        return () => {
+            console.log("🧹 SOCKET: Cleaning up connection...");
+            socket.off("database_update");
+            socket.off("joined");
+            socket.disconnect();
+        };
+    }, [teamId]);
 
     useEffect(() => {
         const hydrateDashboard = async () => {
@@ -90,6 +239,8 @@ function Dashboard() {
                 );
 
                 if (groupData.success && groupData.groupId) {
+                    const groupData = await fetchGroupData();
+                    setTeamId(groupData.groupId);
                     console.log(
                         "attempting hydrate 4: Fetching cloud inventory for Team",
                         groupData.groupId,
@@ -254,7 +405,7 @@ function Dashboard() {
                 {/* The Text */}
                 <p
                     style={{
-                        fontSize: isDesktop ? "1.2rem" : "1rem",
+                        fontSize: isDesktop ? "1.2rem" : "3rem",
                         fontWeight: "500",
                         margin: 0,
                     }}
