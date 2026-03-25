@@ -214,7 +214,6 @@
     display: flex;
     flex-direction: column;
     width: 90%;
-    /* margin: 15px; */
     box-sizing: border-box;
 }
 
@@ -600,7 +599,6 @@
     margin: 10px;
 }
 
-/* Container to match the border-radius and spacing of your inputs */
 .d-custom-sketch-container .w-color-sketch {
     background-color: #282a3a !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -1234,7 +1232,6 @@
     width: 100%;
 }
 
-/* Container for the % selection logic */
 .d-selector-container {
     display: flex;
     align-items: center;
@@ -1246,11 +1243,10 @@
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* The 0, 25, 50, 75% Button Group */
 .d-preset-box {
     display: flex;
     gap: 6px;
-    background: transparent; /* Overriding the old solid background */
+    background: transparent;
     padding: 0;
 }
 
@@ -1263,7 +1259,7 @@
     border-radius: 6px !important;
     transition: all 0.2s ease-in-out !important;
     min-width: 50px;
-    margin: 0; /* Clear existing margins */
+    margin: 0;
 }
 
 .d-preset-box button:hover {
@@ -1279,7 +1275,6 @@
     transform: translateY(0);
 }
 
-/* Driver Hub Slider Styling */
 .d-slider-box {
     display: flex;
     align-items: center;
@@ -1524,12 +1519,10 @@
     padding-right: 8px;
 }
 
-/* 1. Slim down the width */
 .d-homedash-scroll-wrapper::-webkit-scrollbar {
     width: 1px !important;
 }
 
-/* 2. Make the track (background) invisible */
 .d-homedash-scroll-wrapper::-webkit-scrollbar-track {
     background: transparent;
 }
@@ -2089,7 +2082,6 @@
     }
 }
 
-/* Container & Sections */
 .d-settings-wrapper {
     padding: 30px;
     color: white;
@@ -2111,7 +2103,6 @@
     gap: 15px;
 }
 
-/* Typography & Inputs */
 .d-settings-label {
     color: #94a3b8;
     font-size: 0.9rem;
@@ -2136,7 +2127,6 @@
     background-color: #161725;
 }
 
-/* Primary Button (Matching your Create Item style) */
 .d-settings-btn-primary {
     width: 100%;
     height: 55px;
@@ -2169,7 +2159,6 @@
     filter: brightness(0.9);
 }
 
-/* Danger Section */
 .d-settings-danger-zone {
     margin-top: 20px;
     border: 1px solid rgba(255, 77, 77, 0.15);
@@ -2197,14 +2186,10 @@
     transform: translateY(-1px);
 }
 
-/* ... existing d-settings styles ... */
-
-/* Identity Gate specific mobile tweaks */
 .d-settings-verify-icon {
     margin-bottom: 20px;
 }
 
-/* 1199px Mobile Breakpoint */
 @media (max-width: 1199px) {
     .d-settings-wrapper {
         padding: 50px;
@@ -2245,7 +2230,6 @@
     }
 }
 
-/* The full-screen darkened backdrop */
 .d-settings-verified-popup-container {
     position: fixed;
     top: 0;
@@ -2348,8 +2332,40 @@
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 999;
+    box-shadow: 0 4px 14px 0 rgba(71, 213, 166, 0.39);
+    overflow: hidden;
+}
+
+.d-additem-existing-add-trigger:hover {
+    transform: translateX(-50%) translateY(-3px);
+    background-color: #58e6b7;
+    box-shadow: 0 6px 20px rgba(71, 213, 166, 0.5);
+}
+
+.d-additem-existing-add-trigger:active {
+    transform: translateX(-50%) translateY(-1px) scale(0.98);
+}
+
+.d-additem-existing-add-trigger::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: all 0.6s;
+}
+
+.d-additem-existing-add-trigger:hover::before {
+    left: 100%;
 }
 
 .d-additem-existing-listcontainer {
