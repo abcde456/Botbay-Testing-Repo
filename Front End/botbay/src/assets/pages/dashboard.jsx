@@ -53,7 +53,7 @@ function Dashboard() {
         if (Array.isArray(payload)) {
             localStorage.setItem(storageKey, JSON.stringify(payload));
             window.dispatchEvent(new Event("storage"));
-            console.log(`[Sync] 📋 Full overwrite applied to ${storageKey}`);
+            console.log(`[Sync]Full overwrite applied to ${storageKey}`);
             return;
         }
 
@@ -63,7 +63,7 @@ function Dashboard() {
         try {
             currentData = JSON.parse(raw || "[]");
         } catch (e) {
-            console.error("❌ Storage Parse Error:", e);
+            console.error("Storage Parse Error:", e);
             return;
         }
 
@@ -74,7 +74,7 @@ function Dashboard() {
         const targetVal = incomingId || incomingName;
 
         if (!targetVal) {
-            console.warn("[Sync] ⚠️ No identifier found in payload:", payload);
+            console.warn("[Sync]No identifier found in payload:", payload);
             return;
         }
 
@@ -95,12 +95,12 @@ function Dashboard() {
         // 5. PERFORM THE ACTION
         if (action.endsWith("_added")) {
             updatedData = [...currentData, payload];
-            console.log(`✨ Sync Add: ${targetVal}`);
+            console.log(`Sync Add: ${targetVal}`);
         } else if (action.endsWith("_deleted")) {
             updatedData = currentData.filter(
                 (item) => getIdentifier(item) !== targetVal,
             );
-            console.log(`🗑️ Sync Delete: ${targetVal}`);
+            console.log(`Sync Delete: ${targetVal}`);
         } else if (
             action.includes("update") ||
             action.includes("logic") ||
@@ -117,7 +117,7 @@ function Dashboard() {
                         : item,
                 );
             }
-            console.log(`🔄 Sync Update: ${targetVal}`);
+            console.log(`Sync Update: ${targetVal}`);
         }
 
         // 6. PERSIST AND NOTIFY UI
@@ -139,7 +139,7 @@ function Dashboard() {
         );
 
         socket.on("connect", () => {
-            console.log("📡 SOCKET: Connected! ID:", socket.id);
+            console.log("SOCKET: Connected! ID:", socket.id);
 
             setSocketId(socket.id);
 
@@ -170,21 +170,21 @@ function Dashboard() {
         });
 
         socket.on("joined", (resp) => {
-            console.log("✅ SOCKET: Confirmed in Room:", resp.room);
+            console.log("SOCKET: Confirmed in Room:", resp.room);
         });
 
         // THE LISTENER
         socket.on("database_update", (data) => {
-            console.log("🚀 SOCKET DATA ARRIVED:", data);
+            console.log("SOCKET DATA ARRIVED:", data);
             handleRealtimeSync(data.action, data.payload);
         });
 
         socket.on("disconnect", (reason) => {
-            console.warn("❌ SOCKET: Disconnected:", reason);
+            console.warn("SOCKET: Disconnected:", reason);
         });
 
         return () => {
-            console.log("🧹 SOCKET: Cleaning up connection...");
+            console.log("SOCKET: Cleaning up connection...");
             socket.off("database_update");
             socket.off("joined");
             socket.disconnect();

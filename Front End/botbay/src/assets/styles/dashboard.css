@@ -2337,6 +2337,10 @@
 }
 
 .d-additem-existing-add-trigger {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     background-color: #47d5a6;
     color: #1a2e3e;
     padding: 12px 24px;
@@ -2344,14 +2348,8 @@
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
-    margin-bottom: 25px;
     transition: all 0.2s ease-in-out;
-}
-
-.d-additem-existing-add-trigger:hover {
-    background-color: #63f3c3;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(71, 213, 166, 0.3);
+    z-index: 999;
 }
 
 .d-additem-existing-listcontainer {
@@ -2361,6 +2359,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.d-additem-existing-img {
+    width: 90%;
 }
 
 .d-additem-existing-table {
@@ -2517,5 +2519,22 @@
 
     .d-additem-existing-manu-tabs button img {
         min-height: 100px;
+    }
+
+    .d-additem-existing-add-trigger {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        font-size: 4rem;
+        transform: translateX(-50%);
+        background-color: #47d5a6;
+        color: #1a2e3e;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        z-index: 999;
     }
 }

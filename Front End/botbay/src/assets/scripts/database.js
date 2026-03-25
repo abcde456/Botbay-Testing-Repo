@@ -11,7 +11,7 @@ import { isUserSignedIn, getUserGroup } from "./auth.js";
 let currentSocketId = null;
 
 export const setSocketId = (sid) => {
-    console.log(`[database.js] 🆔 Socket ID synchronized: ${sid}`);
+    console.log(`[database.js] Socket ID synchronized: ${sid}`);
     currentSocketId = sid;
 };
 
@@ -27,7 +27,7 @@ async function flaskRequest(endpoint, method = "GET", body = null) {
 
     if (!token) {
         console.error(
-            "[flaskRequest] ❌ No token found. User likely not logged in.",
+            "[flaskRequest] No token found. User likely not logged in.",
         );
         return { error: "No session found" };
     }
@@ -49,7 +49,7 @@ async function flaskRequest(endpoint, method = "GET", body = null) {
         });
     }
 
-    console.log(`[flaskRequest] 🚀 Sending ${method} to ${endpoint}`);
+    console.log(`[flaskRequest] Sending ${method} to ${endpoint}`);
     const response = await fetch(`${RENDER_URL}${endpoint}`, options);
 
     // Handle empty successful responses
@@ -72,7 +72,7 @@ export async function overwritePart(part) {
         );
         return { success: true, data: result };
     } catch (err) {
-        console.error("[Trace] ❌ overwritePart failed:", err);
+        console.error("[Trace] overwritePart failed:", err);
         return { success: false, error: err.message };
     }
 }
@@ -95,7 +95,7 @@ export async function overwriteQuant(partId, quant, needed) {
         }
         return result;
     } catch (err) {
-        console.error("[Trace] ❌ overwriteQuant failed:", err);
+        console.error("[Trace] overwriteQuant failed:", err);
         return { success: false, error: err.message };
     }
 }
@@ -106,7 +106,7 @@ export const cloudCreatePart = async (itemData, teamId) => {
             item_data: itemData,
         });
     } catch (err) {
-        console.error("[Trace] ❌ cloudCreatePart failed:", err);
+        console.error("[Trace] cloudCreatePart failed:", err);
         return { success: false, error: err.message };
     }
 };
@@ -127,7 +127,7 @@ export async function cloudDeletePart(id) {
                 );
                 success = result.success;
             } catch (err) {
-                console.error("[Delete Trace] ❌ Cloud delete error:", err);
+                console.error("[Delete Trace] Cloud delete error:", err);
             }
         }
     }
@@ -151,7 +151,7 @@ export async function readPart(partId) {
         );
         return result.data;
     } catch (err) {
-        console.error("[Trace] ❌ readPart failed:", err);
+        console.error("[Trace] readPart failed:", err);
         return null;
     }
 }

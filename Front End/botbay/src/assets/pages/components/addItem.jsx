@@ -3,13 +3,23 @@ import { isUserSignedIn, getUserGroup } from "../../scripts/auth";
 import { cloudCreatePart } from "../../scripts/database";
 
 import {
+    handlerAddMotor,
+    handlerAddServo,
+    handlerAddStructural,
+    handlerAddElectrical,
+    handlerAddSensor,
+    handlerAdd3DPrinted,
+    handlerAddMachined,
+    handlerAddOther,
+} from "./addExistingItemHandler";
+
+import {
     RiExpandUpDownFill,
     RiArrowDownSFill,
     RiArrowUpSFill,
 } from "react-icons/ri";
 
 import andymarklogo from "../../images/andymark.png";
-import revlogo from "../../images/rev.png";
 import gobildalogo from "../../images/gobilda.png";
 
 function useIsPhone() {
@@ -37,47 +47,41 @@ export function AddItemMenuDesktop({ onClose }) {
         direction: "asc",
     });
 
-    // Mock Data
-    const [partsData] = useState([
-        {
-            id: "am-1234",
-            name: "NeverRest 40 Gearmotor",
-            manufacturer: 1,
-            img: "/assets/icons/motor.png",
-        },
-        {
-            id: "rev-11-1100",
-            name: "Core Hex Motor",
-            manufacturer: 2,
-            img: "/assets/icons/hex.png",
-        },
-        {
-            id: "gb-3101",
-            name: "5202 Yellow Jacket",
-            manufacturer: 3,
-            img: "/assets/icons/gb_motor.png",
-        },
-    ]);
+    const [partsData, setPartsData] = useState([]);
+    const [assignmentIndex, setAssignmentIndex] = useState(0);
+    const [assigningParts, setAssigningParts] = useState([]);
 
-    // Sorting & Filtering Engine
+    useEffect(() => {
+        fetch("manudata.json")
+            .then((res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then((data) => setPartsData(data))
+            .catch((err) => console.error("Error loading manudata.json:", err));
+    }, []);
+
     const filteredAndSortedParts = useMemo(() => {
-        let result = partsData.filter((part) => {
-            const matchesManu = part.manufacturer === currentManufacturer;
-            const matchesSearch =
-                part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                part.id.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesManu && matchesSearch;
-        });
+        const lowerQuery = searchTerm.toLowerCase();
+
+        let result = partsData
+            .filter((part) => part.manufacturer === currentManufacturer)
+            .filter(
+                (part) =>
+                    part.name.toLowerCase().includes(lowerQuery) ||
+                    part.id.toLowerCase().includes(lowerQuery),
+            );
 
         if (sortConfig.key) {
             result.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key])
-                    return sortConfig.direction === "asc" ? -1 : 1;
-                if (a[sortConfig.key] > b[sortConfig.key])
-                    return sortConfig.direction === "asc" ? 1 : -1;
+                const aVal = a[sortConfig.key];
+                const bVal = b[sortConfig.key];
+                if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+                if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
                 return 0;
             });
         }
+
         return result;
     }, [partsData, currentManufacturer, searchTerm, sortConfig]);
 
@@ -111,6 +115,8 @@ export function AddItemMenuDesktop({ onClose }) {
         setExistingSelectOpen(false);
         setRenderingPartIndex(false);
         setPartIndexOpen(null);
+        setAssignmentIndex(0);
+        setAssigningParts([]);
         onClose();
     }
 
@@ -167,6 +173,70 @@ export function AddItemMenuDesktop({ onClose }) {
         }
     }
 
+    function handleItemCreation() {
+        setAssigningParts(
+            selectedParts.map((id) => partsData.find((p) => p.id === id)),
+        );
+        setAssignmentIndex(0);
+    }
+
+    function handleAssignType(type) {
+        if (type)
+            console.log({
+                item: assigningParts[assignmentIndex],
+                type,
+            });
+        switch (type) {
+            case "Motor":
+                handlerAddMotor(assigningParts[assignmentIndex], createNewItem);
+                break;
+            case "Servo":
+                handlerAddServo(assigningParts[assignmentIndex], createNewItem);
+                break;
+            case "Structural":
+                handlerAddStructural(
+                    assigningParts[assignmentIndex],
+                    createNewItem,
+                );
+                break;
+            case "Electrical":
+                handlerAddElectrical(
+                    assigningParts[assignmentIndex],
+                    createNewItem,
+                );
+                break;
+            case "Sensor":
+                handlerAddSensor(
+                    assigningParts[assignmentIndex],
+                    createNewItem,
+                );
+                break;
+            case "3D Printed":
+                handlerAdd3dPrinted(
+                    assigningParts[assignmentIndex],
+                    createNewItem,
+                );
+                break;
+            case "Machined":
+                handlerAddMachined(
+                    assigningParts[assignmentIndex],
+                    createNewItem,
+                );
+                break;
+            case "Other":
+                handlerAddOther(assigningParts[assignmentIndex], createNewItem);
+                break;
+            default:
+                console.warn("Unknown type:", type);
+        }
+        if (assignmentIndex < assigningParts.length - 1) {
+            setAssignmentIndex((prev) => prev + 1);
+        } else {
+            setAssigningParts([]);
+            setSelectedParts([]);
+        }
+    }
+
     return (
         <div className="d-partoverlay">
             <button className="d-partoverlay-exitbutton" onClick={handleClose}>
@@ -189,7 +259,7 @@ export function AddItemMenuDesktop({ onClose }) {
                 </div>
             )}
 
-            {existingOpen && (
+            {existingOpen && !assigningParts.length && (
                 <div className="d-additem-existing-main-wrapper">
                     <button
                         className="d-partoverlay-returnbutton"
@@ -206,14 +276,6 @@ export function AddItemMenuDesktop({ onClose }) {
                             onClick={() => setCurrentManufacturer(1)}
                         >
                             <img src={andymarklogo} alt="Andymark" />
-                        </button>
-                        <button
-                            className={
-                                currentManufacturer === 2 ? "active" : ""
-                            }
-                            onClick={() => setCurrentManufacturer(2)}
-                        >
-                            <img src={revlogo} alt="REV" />
                         </button>
                         <button
                             className={
@@ -261,9 +323,10 @@ export function AddItemMenuDesktop({ onClose }) {
                                     <th style={{ width: "15%" }}>Select</th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                {filteredAndSortedParts.map((part) => (
-                                    <tr key={part.id}>
+                                {filteredAndSortedParts.map((part, index) => (
+                                    <tr key={`${part.id}-${index}`}>
                                         <td>
                                             <img
                                                 src={part.img}
@@ -300,22 +363,30 @@ export function AddItemMenuDesktop({ onClose }) {
                     </div>
 
                     {selectedParts.length > 0 && (
-                        <button className="d-additem-existing-add-trigger">
-                            Add {selectedParts.length} Selected Items
+                        <button
+                            className="d-additem-existing-add-trigger"
+                            onClick={handleItemCreation}
+                        >
+                            Add {selectedParts.length}{" "}
+                            {selectedParts.length === 1
+                                ? "Selected Item"
+                                : "Selected Items"}
                         </button>
                     )}
                 </div>
             )}
 
-            {partIndexOpen === null && renderingPartIndex && (
+            {assigningParts.length > 0 && (
                 <div className="d-createitem-centercontainer">
-                    <button
-                        className="d-partoverlay-returnbutton"
-                        onClick={handleOpenSelect}
-                    >
-                        &lt;
-                    </button>
                     <div className="d-createitem-middlecontainer">
+                        <p className="abouttext2">
+                            Assign type for:{" "}
+                            {assigningParts[assignmentIndex].name}
+                        </p>
+                        <img
+                            className="d-additem-existing-img"
+                            src={assigningParts[assignmentIndex].img}
+                        ></img>
                         {[
                             "Motor",
                             "Servo",
@@ -328,7 +399,7 @@ export function AddItemMenuDesktop({ onClose }) {
                         ].map((label, idx) => (
                             <button
                                 key={idx}
-                                onClick={() => setPartIndexOpen(idx)}
+                                onClick={() => handleAssignType(label)}
                             >
                                 {label}
                             </button>
@@ -336,6 +407,38 @@ export function AddItemMenuDesktop({ onClose }) {
                     </div>
                 </div>
             )}
+
+            {partIndexOpen === null &&
+                renderingPartIndex &&
+                !assigningParts.length && (
+                    <div className="d-createitem-centercontainer">
+                        <button
+                            className="d-partoverlay-returnbutton"
+                            onClick={handleOpenSelect}
+                        >
+                            &lt;
+                        </button>
+                        <div className="d-createitem-middlecontainer">
+                            {[
+                                "Motor",
+                                "Servo",
+                                "Structural",
+                                "Electrical",
+                                "Sensor",
+                                "3D Printed",
+                                "Machined",
+                                "Other",
+                            ].map((label, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setPartIndexOpen(idx)}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             {partIndexOpen !== null && renderCorrectItemToAdd()}
         </div>
     );
