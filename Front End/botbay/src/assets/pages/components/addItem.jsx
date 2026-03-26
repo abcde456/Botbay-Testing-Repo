@@ -21,6 +21,7 @@ import {
 
 import andymarklogo from "../../images/andymark.png";
 import gobildalogo from "../../images/gobilda.png";
+import studicalogo from "../../images/studica.png";
 
 function useIsPhone() {
     const [isPhone, setIsPhone] = useState(window.innerWidth < 1200);
@@ -39,7 +40,7 @@ export function AddItemMenuDesktop({ onClose }) {
     const [existingSelectOpen, setExistingSelectOpen] = useState(true);
     const [existingOpen, setExistingOpen] = useState(false);
     const [renderingPartIndex, setRenderingPartIndex] = useState(false);
-    const [currentManufacturer, setCurrentManufacturer] = useState(1); // 1: Andymark, 2: REV, 3: Gobilda
+    const [currentManufacturer, setCurrentManufacturer] = useState(1); // 1: Andymark, 2: REV, 3: Gobilda, 4: Studica
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedParts, setSelectedParts] = useState([]);
     const [sortConfig, setSortConfig] = useState({
@@ -284,6 +285,14 @@ export function AddItemMenuDesktop({ onClose }) {
                             onClick={() => setCurrentManufacturer(3)}
                         >
                             <img src={gobildalogo} alt="Gobilda" />
+                        </button>
+                        <button
+                            className={
+                                currentManufacturer === 4 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(4)}
+                        >
+                            <img src={studicalogo} alt="Studica" />
                         </button>
                     </div>
 
