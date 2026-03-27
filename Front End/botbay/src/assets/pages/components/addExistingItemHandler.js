@@ -5,6 +5,16 @@ function handleManufacturer(num) {
         return "Rev";
     } else if (num == 3) {
         return "Gobilda";
+    } else if (num == 4) {
+        return "Studica";
+    } else if (num == 5) {
+        return "Tetrix";
+    } else if (num == 6) {
+        return "Axon Robotics";
+    } else if (num == 7) {
+        return "Swyft Robotics";
+    } else if (num == 8) {
+        return "Limelight Robotics";
     }
 }
 

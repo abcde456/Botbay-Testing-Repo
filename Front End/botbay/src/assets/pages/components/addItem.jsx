@@ -20,8 +20,13 @@ import {
 } from "react-icons/ri";
 
 import andymarklogo from "../../images/andymark.png";
+import revlogo from "../../images/rev.png";
 import gobildalogo from "../../images/gobilda.png";
 import studicalogo from "../../images/studica.png";
+import tetrixlogo from "../../images/tetrix.png";
+import axonlogo from "../../images/axon.png";
+import swyftlogo from "../../images/swyft.png";
+import limelightlogo from "../../images/limelight.png";
 
 function useIsPhone() {
     const [isPhone, setIsPhone] = useState(window.innerWidth < 1200);
@@ -40,7 +45,7 @@ export function AddItemMenuDesktop({ onClose }) {
     const [existingSelectOpen, setExistingSelectOpen] = useState(true);
     const [existingOpen, setExistingOpen] = useState(false);
     const [renderingPartIndex, setRenderingPartIndex] = useState(false);
-    const [currentManufacturer, setCurrentManufacturer] = useState(1); // 1: Andymark, 2: REV, 3: Gobilda, 4: Studica
+    const [currentManufacturer, setCurrentManufacturer] = useState(1); // 1: Andymark, 2: REV, 3: Gobilda, 4: Studica, 5: Tetrix, 6: Axon, 7: Swyft, 8: Limelight
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedParts, setSelectedParts] = useState([]);
     const [sortConfig, setSortConfig] = useState({
@@ -280,12 +285,22 @@ export function AddItemMenuDesktop({ onClose }) {
                         </button>
                         <button
                             className={
+                                currentManufacturer === 2 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(2)}
+                        >
+                            <img src={revlogo} alt="Rev" />
+                        </button>
+                        <button
+                            className={
                                 currentManufacturer === 3 ? "active" : ""
                             }
                             onClick={() => setCurrentManufacturer(3)}
                         >
                             <img src={gobildalogo} alt="Gobilda" />
                         </button>
+                    </div>
+                    <div className="d-additem-existing-manu-tabs">
                         <button
                             className={
                                 currentManufacturer === 4 ? "active" : ""
@@ -293,6 +308,40 @@ export function AddItemMenuDesktop({ onClose }) {
                             onClick={() => setCurrentManufacturer(4)}
                         >
                             <img src={studicalogo} alt="Studica" />
+                        </button>
+                        <button
+                            className={
+                                currentManufacturer === 5 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(5)}
+                        >
+                            <img src={tetrixlogo} alt="Tetrix" />
+                        </button>
+                        <button
+                            className={
+                                currentManufacturer === 6 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(6)}
+                        >
+                            <img src={axonlogo} alt="Axon" />
+                        </button>
+                    </div>
+                    <div className="d-additem-existing-manu-tabs">
+                        <button
+                            className={
+                                currentManufacturer === 7 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(7)}
+                        >
+                            <img src={swyftlogo} alt="Swyft" />
+                        </button>
+                        <button
+                            className={
+                                currentManufacturer === 8 ? "active" : ""
+                            }
+                            onClick={() => setCurrentManufacturer(8)}
+                        >
+                            <img src={limelightlogo} alt="Limelight" />
                         </button>
                     </div>
 
